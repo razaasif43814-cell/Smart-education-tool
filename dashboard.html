@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EduBoard – Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Bricolage+Grotesque:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--blue-vivid:#7C3AED;--blue-soft:#F5F3FF;--blue-mid:#DDD6FE;--blue-dark:#4C1D95;--accent-coral:#FF5C3A;--accent-green:#1DBF73;--accent-amber:#F59E0B;--bg:#FAF8FF;--card:#FFFFFF;--sidebar:#FFFFFF;--text-primary:#1E1030;--text-muted:#6B6B8A;--text-light:#C4B8E8;--border:#EDE9F8;--shadow-sm:0 1px 4px rgba(124,58,237,0.06);--shadow-md:0 4px 20px rgba(124,58,237,0.10);--shadow-lg:0 8px 40px rgba(124,58,237,0.14);--radius:14px;--radius-sm:9px}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(--text-primary);min-height:100vh;display:flex;overflow:hidden}
+a{text-decoration:none;color:inherit}
+
+/* ── SIDEBAR ─────────────────────────────── */
+.sidebar{width:218px;min-height:100vh;background:var(--sidebar);border-right:1.5px solid var(--border);display:flex;flex-direction:column;padding:28px 16px 0;flex-shrink:0;animation:slideInLeft .45s ease both}
+@keyframes slideInLeft{from{opacity:0;transform:translateX(-18px)}to{opacity:1;transform:translateX(0)}}
+.brand{display:flex;align-items:center;gap:10px;padding:0 6px 28px}
+.brand-icon{width:34px;height:34px;background:var(--blue-vivid);border-radius:10px;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 14px rgba(124,58,237,0.35)}
+.brand-icon svg{width:18px;height:18px;fill:white}
+.brand-name{font-family:'Bricolage Grotesque',sans-serif;font-size:17px;font-weight:800;color:var(--text-primary);letter-spacing:-0.5px}
+.brand-name span{color:var(--blue-vivid)}
+.nav-group{margin-bottom:6px}
+.nav-group-label{font-size:10px;font-weight:700;color:var(--text-light);text-transform:uppercase;letter-spacing:1.2px;padding:0 8px 8px;display:block}
+.nav-item{display:flex;align-items:center;gap:11px;padding:10px 12px;border-radius:var(--radius-sm);font-size:13.5px;font-weight:500;color:var(--text-muted);cursor:pointer;transition:all .18s;margin-bottom:2px;user-select:none}
+.nav-item:hover{background:var(--blue-soft);color:var(--blue-vivid);transform:translateX(2px)}
+.nav-item.active{background:var(--blue-vivid);color:white;font-weight:600;box-shadow:0 4px 16px rgba(124,58,237,0.30)}
+.nav-item.active:hover{transform:none}
+.nav-pill{margin-left:auto;font-size:10px;font-weight:700;background:rgba(255,255,255,0.25);padding:2px 7px;border-radius:20px;color:white}
+.nav-pill-blue{margin-left:auto;font-size:10px;font-weight:700;background:var(--blue-soft);color:var(--blue-vivid);padding:2px 7px;border-radius:20px}
+
+
+
+/* ── SIDEBAR BOTTOM ──────────────────────── */
+.sidebar-spacer{flex:1}
+.sidebar-bottom{padding:16px 0 0;border-top:1.5px solid var(--border);margin-bottom:0}
+.sidebar-user{display:flex;align-items:center;gap:10px;padding:12px;background:var(--blue-soft);border-radius:var(--radius-sm)}
+.su-avatar{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,var(--blue-vivid),#A78BFA);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;color:white;flex-shrink:0}
+.su-info{flex:1;min-width:0}
+.su-name{font-size:13px;font-weight:700;color:var(--text-primary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.su-role{font-size:11px;color:var(--text-muted)}
+.logout-btn{display:flex;align-items:center;gap:9px;padding:11px 12px;border-radius:var(--radius-sm);font-size:13px;font-weight:600;color:var(--accent-coral);cursor:pointer;transition:all .18s;margin-top:6px;margin-bottom:20px;border:1.5px solid transparent;background:transparent;width:100%;font-family:inherit}
+.logout-btn:hover{background:#FFF1EF;border-color:#FECACA;transform:translateX(2px)}
+
+/* ── CONTENT ─────────────────────────────── */
+.content{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0}
+
+/* ── TOPBAR ──────────────────────────────── */
+.topbar{background:var(--card);border-bottom:1.5px solid var(--border);padding:14px 28px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;animation:fadeDown .4s ease both;position:relative;z-index:100}
+@keyframes fadeDown{from{opacity:0;transform:translateY(-10px)}to{opacity:1;transform:translateY(0)}}
+.topbar-left h1{font-family:'Bricolage Grotesque',sans-serif;font-size:19px;font-weight:800;letter-spacing:-0.5px}
+.topbar-left p{font-size:12px;color:var(--text-muted);margin-top:1px}
+.topbar-right{display:flex;align-items:center;gap:10px}
+
+/* functional search */
+.search-wrap{position:relative}
+.search-wrap input{background:var(--bg);border:1.5px solid var(--border);border-radius:10px;padding:8px 14px 8px 36px;font-size:13px;color:var(--text-primary);width:220px;outline:none;font-family:inherit;transition:border-color .2s,box-shadow .2s}
+.search-wrap input:focus{border-color:var(--blue-vivid);box-shadow:0 0 0 3px rgba(124,58,237,0.10)}
+.search-wrap input::placeholder{color:var(--text-muted)}
+.search-icon{position:absolute;left:11px;top:50%;transform:translateY(-50%);font-size:14px;pointer-events:none}
+/* search dropdown */
+.search-dropdown{position:absolute;top:calc(100% + 6px);left:0;width:280px;background:var(--card);border:1.5px solid var(--border);border-radius:var(--radius-sm);box-shadow:var(--shadow-lg);z-index:9999;display:none;overflow:hidden;animation:dropIn .15s ease}
+.search-dropdown.open{display:block}
+@keyframes dropIn{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:translateY(0)}}
+.sd-section{padding:8px 0}
+.sd-label{font-size:10px;font-weight:700;color:var(--text-light);text-transform:uppercase;letter-spacing:1px;padding:4px 14px 6px}
+.sd-item{display:flex;align-items:center;gap:10px;padding:8px 14px;cursor:pointer;transition:background .15s;font-size:13px}
+.sd-item:hover{background:var(--blue-soft)}
+.sd-item-icon{font-size:16px;flex-shrink:0}
+.sd-item-text{flex:1}
+.sd-item-name{font-weight:600;color:var(--text-primary)}
+.sd-item-sub{font-size:11px;color:var(--text-muted)}
+.sd-empty{padding:16px 14px;font-size:13px;color:var(--text-muted);text-align:center}
+.sd-divider{height:1px;background:var(--border);margin:2px 0}
+
+.icon-btn{width:38px;height:38px;border-radius:10px;background:var(--bg);border:1.5px solid var(--border);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:16px;transition:all .18s}
+.icon-btn:hover{background:var(--blue-soft);border-color:var(--blue-vivid)}
+
+/* ── BODY ────────────────────────────────── */
+.body-layout{flex:1;display:flex;overflow:hidden}
+.middle{flex:1;padding:22px 22px 22px 24px;display:flex;flex-direction:column;gap:16px;overflow-y:auto;min-width:0}
+.stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;animation:fadeUp .5s ease .1s both}
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+.stat-card{background:var(--card);border-radius:var(--radius);padding:18px 18px 14px;border:1.5px solid var(--border);box-shadow:var(--shadow-sm);position:relative;overflow:hidden;cursor:default;transition:box-shadow .2s,transform .2s}
+.stat-card:hover{box-shadow:var(--shadow-md);transform:translateY(-2px)}
+.stat-card-accent{position:absolute;top:0;right:0;width:56px;height:56px;border-radius:0 var(--radius) 0 56px;opacity:.12}
+.stat-label{font-size:11px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.6px}
+.stat-val{font-family:'Bricolage Grotesque',sans-serif;font-size:28px;font-weight:800;margin:6px 0 4px;letter-spacing:-1px}
+.stat-tag{display:inline-flex;align-items:center;gap:3px;font-size:11px;font-weight:700;padding:3px 8px;border-radius:20px}
+.tag-up{background:#DCFCE7;color:#15803D}.tag-down{background:#FEE2E2;color:#B91C1C}
+.chart-card{background:var(--card);border-radius:var(--radius);border:1.5px solid var(--border);box-shadow:var(--shadow-sm);padding:20px 24px;animation:fadeUp .5s ease .2s both}
+.chart-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}
+.chart-title{font-family:'Bricolage Grotesque',sans-serif;font-size:15px;font-weight:700}
+.quick-btn{display:flex;align-items:center;gap:10px;padding:12px 14px;border:1.5px solid var(--border);border-radius:var(--radius-sm);background:white;cursor:pointer;transition:all .18s;font-size:13px;font-weight:600;color:var(--text-primary);width:100%}
+.quick-btn:hover{border-color:var(--blue-vivid);background:var(--blue-soft);color:var(--blue-vivid)}
+.middle::-webkit-scrollbar{width:5px}
+.middle::-webkit-scrollbar-thumb{background:var(--blue-mid);border-radius:20px}
+.quiz-row{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--border)}
+.quiz-row:last-child{border-bottom:none}
+.qr-emoji{font-size:22px;flex-shrink:0}
+.qr-info{flex:1;min-width:0}
+.qr-name{font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.qr-meta{font-size:11px;color:var(--text-muted)}
+.qr-score{font-family:'Bricolage Grotesque',sans-serif;font-size:16px;font-weight:800;color:var(--blue-vivid);flex-shrink:0}
+.empty-state{text-align:center;padding:24px 16px;color:var(--text-muted);font-size:13px}
+.empty-state .es-icon{font-size:32px;margin-bottom:8px}
+
+
+</style>
+</head>
+<body>
+
+<!-- ════ SIDEBAR ════ -->
+<aside class="sidebar">
+  <div class="brand">
+    <div class="brand-icon"><svg viewBox="0 0 24 24"><path d="M12 3L1 9l4 2.18v6L12 21l7-3.82v-6L23 9zm0 2.26L19.16 9 12 12.74 4.84 9zm5 9.26L12 18.74 7 14.52V12.5l5 2.74 5-2.74z"/></svg></div>
+    <div class="brand-name">Edu<span>Board</span></div>
+  </div>
+
+  <div class="nav-group">
+    <span class="nav-group-label">Main</span>
+    <a class="nav-item active" href="/dashboard"><span>🏠</span> Dashboard</a>
+    <a class="nav-item" href="/analytics"><span>📊</span> Analytics <span class="nav-pill-blue">NEW</span></a>
+    <a class="nav-item" href="/quiz"><span>📋</span> Quiz <span class="nav-pill-blue">Live</span></a>
+    <a class="nav-item" href="/leaderboard"><span>🏆</span> Leaderboard</a>
+    <a class="nav-item" href="/marks-analyzer"><span>📊</span> Marks Analyzer</a>
+    <a class="nav-item" href="/health"><span>❤️</span> Health</a>
+  </div>
+
+  <div class="sidebar-spacer"></div>
+
+  <div class="sidebar-bottom">
+    <div class="sidebar-user">
+      <div class="su-avatar">{{ user.initials }}</div>
+      <div class="su-info">
+        <div class="su-name">{{ user.first_name }}</div>
+        <div class="su-role">{{ user.role|capitalize }}</div>
+      </div>
+    </div>
+    <a href="/logout" class="logout-btn">
+      <span style="font-size:16px">⏻</span> Logout
+    </a>
+  </div>
+</aside>
+
+<!-- ════ CONTENT ════ -->
+<div class="content">
+
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <div class="topbar-left">
+      <h1>Dashboard</h1>
+      <p>Welcome back, {{ user.first_name }} 👋 — Here's your overview</p>
+    </div>
+    <div class="topbar-right">
+      <!-- Functional search bar -->
+      <div class="search-wrap" id="search-wrap">
+        <span class="search-icon">🔍</span>
+        <input
+          type="text"
+          id="search-input"
+          placeholder="Search pages, quizzes, subjects…"
+          autocomplete="off"
+          oninput="handleSearch(this.value)"
+        >
+        <div class="search-dropdown" id="search-dropdown"></div>
+      </div>
+      <!-- Notification icon REMOVED -->
+      <div class="icon-btn" title="{{ user.full_name }}">{{ user.initials }}</div>
+    </div>
+  </div>
+
+  <div class="body-layout">
+    <div class="middle">
+
+      <!-- STAT CARDS -->
+      <div class="stat-grid">
+        <div class="stat-card">
+          <div class="stat-card-accent" style="background:var(--blue-vivid)"></div>
+          <div class="stat-label">Total Quizzes</div>
+          <div class="stat-val" id="stat-total">{{ stats.total_quizzes }}</div>
+          <span class="stat-tag tag-up">📈 All time</span>
+        </div>
+        <div class="stat-card">
+          <div class="stat-card-accent" style="background:var(--accent-green)"></div>
+          <div class="stat-label">Avg Score</div>
+          <div class="stat-val" id="stat-avg">{{ stats.avg_score }}%</div>
+          <span class="stat-tag" id="stat-avg-tag">
+            {% if stats.avg_score >= 60 %}↑ Good{% else %}↓ Improve{% endif %}
+          </span>
+        </div>
+        <div class="stat-card">
+          <div class="stat-card-accent" style="background:var(--accent-amber)"></div>
+          <div class="stat-label">Best Score</div>
+          <div class="stat-val" id="stat-best">{{ stats.best_score }}%</div>
+          <span class="stat-tag tag-up">🏆 Personal best</span>
+        </div>
+        <div class="stat-card">
+          <div class="stat-card-accent" style="background:var(--accent-coral)"></div>
+          <div class="stat-label">Time Spent</div>
+          <div class="stat-val" id="stat-time">{{ stats.total_time_min }}m</div>
+          <span class="stat-tag tag-up">⏱ Learning time</span>
+        </div>
+      </div>
+
+      <!-- QUICK ACTIONS -->
+      <div class="chart-card" style="padding:20px 22px">
+        <div class="chart-header"><div class="chart-title">⚡ Quick Actions</div></div>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px">
+          <a href="/quiz" style="text-decoration:none">
+            <button class="quick-btn">📋 Take a Quiz</button>
+          </a>
+          <a href="/analytics" style="text-decoration:none">
+            <button class="quick-btn">📊 View Analytics</button>
+          </a>
+          <a href="/marks-analyzer" style="text-decoration:none">
+            <button class="quick-btn">📊 Analyze Marks</button>
+          </a>
+        </div>
+      </div>
+
+      <!-- RECENT QUIZZES -->
+      <div class="chart-card">
+        <div class="chart-header">
+          <div class="chart-title">📋 Recent Quiz Attempts</div>
+          <a href="/quiz" style="font-size:12px;font-weight:700;color:var(--blue-vivid);text-decoration:none">Take new quiz →</a>
+        </div>
+        <div id="recent-quizzes">
+          <div class="empty-state"><div class="es-icon">🎯</div>No quizzes taken yet.<br>Start your first quiz!</div>
+        </div>
+      </div>
+
+    </div><!-- /middle -->
+    <!-- Right panel (Top Learners & Your Subjects) REMOVED -->
+  </div>
+</div>
+
+
+
+<script>
+const SUBJECT_EMOJIS = {
+  'Mathematics':'🔢','Science':'🔬','History':'🏛️','Geography':'🌍',
+  'Computer Science':'💻','General Knowledge':'🧠','English':'📖','Sports':'⚽'
+};
+
+let allQuizData = [];
+
+/* ── LOAD DATA ───────────────────────────── */
+fetch('/api/user-stats').then(r=>r.json()).then(data=>{
+  const s = data.stats;
+  document.getElementById('stat-total').textContent = s.total_quizzes;
+  document.getElementById('stat-avg').textContent   = s.avg_score + '%';
+  document.getElementById('stat-best').textContent  = s.best_score + '%';
+  const m = s.total_time_min;
+  document.getElementById('stat-time').textContent  = m < 1 ? '<1m' : m < 60 ? Math.round(m)+'m' : (m/60).toFixed(1)+'h';
+  const avgTag = document.getElementById('stat-avg-tag');
+  if(avgTag){ avgTag.className='stat-tag '+(s.avg_score>=60?'tag-up':'tag-down'); avgTag.textContent=s.avg_score>=60?'↑ Good':'↓ Improve'; }
+  allQuizData = data.attempts || [];
+  renderRecentQuizzes(allQuizData);
+}).catch(()=>{
+  fetch('/api/leaderboard').then(r=>r.json()).then(data=>{ allQuizData=data; renderRecentQuizzes(data); });
+});
+
+/* ── RENDER RECENT QUIZZES ───────────────── */
+function renderRecentQuizzes(data){
+  const el = document.getElementById('recent-quizzes');
+  if(!data || !data.length){
+    el.innerHTML='<div class="empty-state"><div class="es-icon">🎯</div>No quizzes taken yet.<br>Start your first quiz!</div>';
+    return;
+  }
+  el.innerHTML=data.slice(0,5).map(a=>{
+    const emoji=SUBJECT_EMOJIS[a.subject]||'📚';
+    const c=a.percentage>=70?'#1DBF73':a.percentage>=40?'#F59E0B':'#FF5C3A';
+    return '<div class="quiz-row">'
+      +'<div class="qr-emoji">'+emoji+'</div>'
+      +'<div class="qr-info">'
+      +'<div class="qr-name">'+a.subject+'</div>'
+      +'<div class="qr-meta">'+a.difficulty+' · '+a.score+'/'+a.total+' · '+(a.taken_at||'')+'</div>'
+      +'</div>'
+      +'<div class="qr-score" style="color:'+c+'">'+a.percentage+'%</div>'
+      +'</div>';
+  }).join('');
+}
+
+/* ── SEARCH ──────────────────────────────── */
+const NAV_LINKS = [
+  {name:'Dashboard',      icon:'🏠', url:'/dashboard',      hint:'Go to dashboard home'},
+  {name:'Analytics',      icon:'📊', url:'/analytics',      hint:'View your performance analytics'},
+  {name:'Take a Quiz',    icon:'📋', url:'/quiz',            hint:'Start a new quiz'},
+  {name:'Leaderboard',    icon:'🏆', url:'/leaderboard',    hint:'View leaderboard rankings'},
+  {name:'Marks Analyzer', icon:'📊', url:'/marks-analyzer', hint:'Analyze your marks'},
+  {name:'Students',       icon:'👥', url:'/students',        hint:'View student records'},
+  {name:'Health',         icon:'❤️', url:'/health',          hint:'Health and wellness tracker'},
+];
+
+function navTo(url){ window.location.href = url; }
+
+function handleSearch(q){
+  const dd   = document.getElementById('search-dropdown');
+  const trim = q.trim().toLowerCase();
+  if(!trim){ dd.classList.remove('open'); return; }
+
+  const matchedNav = NAV_LINKS.filter(n=>
+    n.name.toLowerCase().includes(trim) || n.hint.toLowerCase().includes(trim)
+  );
+  const matchedQuizzes = allQuizData.filter(a=>
+    (a.subject||'').toLowerCase().includes(trim) ||
+    (a.difficulty||'').toLowerCase().includes(trim)
+  ).slice(0,4);
+
+  let html = '';
+
+  if(matchedNav.length){
+    html += '<div class="sd-section"><div class="sd-label">Pages</div>';
+    matchedNav.forEach(function(n){
+      html += '<div class="sd-item" onclick="navTo(\''+n.url+'\')">';
+      html += '<span class="sd-item-icon">'+n.icon+'</span>';
+      html += '<div class="sd-item-text"><div class="sd-item-name">'+n.name+'</div><div class="sd-item-sub">'+n.hint+'</div></div>';
+      html += '</div>';
+    });
+    html += '</div>';
+  }
+
+  if(matchedQuizzes.length){
+    if(matchedNav.length) html += '<div class="sd-divider"></div>';
+    html += '<div class="sd-section"><div class="sd-label">Your Quiz History</div>';
+    matchedQuizzes.forEach(function(a){
+      const emoji = SUBJECT_EMOJIS[a.subject]||'📚';
+      const c = a.percentage>=70?'var(--accent-green)':a.percentage>=40?'var(--accent-amber)':'var(--accent-coral)';
+      html += '<div class="sd-item">';
+      html += '<span class="sd-item-icon">'+emoji+'</span>';
+      html += '<div class="sd-item-text"><div class="sd-item-name">'+a.subject+'</div><div class="sd-item-sub">'+a.difficulty+' · '+a.score+'/'+a.total+'</div></div>';
+      html += '<span style="font-size:12px;font-weight:700;color:'+c+'">'+a.percentage+'%</span>';
+      html += '</div>';
+    });
+    html += '</div>';
+  }
+
+  if(!matchedNav.length && !matchedQuizzes.length){
+    html = '<div class="sd-empty">No results for <strong>'+trim+'</strong></div>';
+  }
+
+  dd.innerHTML = html;
+  dd.classList.add('open');
+}
+
+document.addEventListener('click', function(e){
+  const wrap = document.getElementById('search-wrap');
+  if(wrap && !wrap.contains(e.target)){
+    document.getElementById('search-dropdown').classList.remove('open');
+  }
+});
+
+document.addEventListener('keydown', function(e){
+  if(e.key === 'Escape'){
+    document.getElementById('search-dropdown').classList.remove('open');
+    document.getElementById('search-input').blur();
+  }
+});
+</script>
+</body>
+</html>

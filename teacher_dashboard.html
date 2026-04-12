@@ -1,0 +1,592 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EduBoard – Teacher Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Bricolage+Grotesque:wght@400;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.min.js"></script>
+<style>
+:root{--blue-vivid:#7C3AED;--blue-soft:#F5F3FF;--blue-mid:#DDD6FE;--blue-dark:#4C1D95;--accent-coral:#FF5C3A;--accent-green:#1DBF73;--accent-amber:#F59E0B;--bg:#FAF8FF;--card:#FFFFFF;--sidebar:#FFFFFF;--text-primary:#1E1030;--text-muted:#6B6B8A;--text-light:#C4B8E8;--border:#EDE9F8;--shadow-sm:0 1px 4px rgba(124,58,237,0.06);--shadow-md:0 4px 20px rgba(124,58,237,0.10);--shadow-lg:0 8px 40px rgba(124,58,237,0.14);--radius:14px;--radius-sm:9px}
+
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+
+html,body{height:100%;width:100%}
+
+body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(--text-primary);display:flex;overflow:hidden}
+
+a{text-decoration:none;color:inherit}
+
+/* SIDEBAR */
+.sidebar{width:218px;min-height:100vh;background:var(--sidebar);border-right:1.5px solid var(--border);display:flex;flex-direction:column;padding:28px 16px 24px;flex-shrink:0;animation:slideInLeft .45s ease both;overflow-y:auto}
+
+@keyframes slideInLeft{from{opacity:0;transform:translateX(-18px)}to{opacity:1;transform:translateX(0)}}
+
+.brand{display:flex;align-items:center;gap:10px;padding:0 6px 28px}
+
+.brand-icon{width:34px;height:34px;background:var(--blue-vivid);border-radius:10px;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 14px rgba(124,58,237,0.35)}
+
+.brand-icon svg{width:18px;height:18px;fill:white}
+
+.brand-name{font-family:'Bricolage Grotesque',sans-serif;font-size:17px;font-weight:800;color:var(--text-primary);letter-spacing:-0.5px}
+
+.brand-name span{color:var(--blue-vivid)}
+
+.nav-group{margin-bottom:6px}
+
+.nav-group-label{font-size:10px;font-weight:700;color:var(--text-light);text-transform:uppercase;letter-spacing:1.2px;padding:0 8px 8px;display:block}
+
+.nav-item{display:flex;align-items:center;gap:11px;padding:10px 12px;border-radius:var(--radius-sm);font-size:13.5px;font-weight:500;color:var(--text-muted);cursor:pointer;transition:all .18s;margin-bottom:2px;user-select:none}
+
+.nav-item:hover{background:var(--blue-soft);color:var(--blue-vivid);transform:translateX(2px)}
+
+.nav-item.active{background:var(--blue-vivid);color:white;font-weight:600;box-shadow:0 4px 16px rgba(124,58,237,0.30)}
+
+.nav-item.active:hover{transform:none}
+
+.sidebar-user{display:flex;align-items:center;gap:10px;padding:12px;background:var(--blue-soft);border-radius:var(--radius-sm);margin-top:auto}
+
+.su-avatar{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,var(--blue-vivid),#A78BFA);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;color:white;flex-shrink:0}
+
+.su-info{flex:1;min-width:0}
+
+.su-name{font-size:13px;font-weight:700;color:var(--text-primary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+.su-role{font-size:11px;color:var(--text-muted)}
+
+.su-logout{font-size:16px;cursor:pointer;color:var(--text-muted);transition:color .2s;padding:4px}
+
+.su-logout:hover{color:var(--accent-coral)}
+
+/* MAIN CONTENT AREA */
+.content-wrapper{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0}
+
+/* TOPBAR */
+.topbar{background:var(--card);border-bottom:1.5px solid var(--border);padding:14px 28px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;animation:fadeDown .4s ease both}
+
+@keyframes fadeDown{from{opacity:0;transform:translateY(-10px)}to{opacity:1;transform:translateY(0)}}
+
+.topbar-left h1{font-family:'Bricolage Grotesque',sans-serif;font-size:19px;font-weight:800;letter-spacing:-0.5px}
+
+.topbar-left p{font-size:12px;color:var(--text-muted);margin-top:1px}
+
+.topbar-right{display:flex;align-items:center;gap:10px}
+
+.search-bar{display:flex;align-items:center;gap:8px;background:var(--bg);border:1.5px solid var(--border);border-radius:10px;padding:8px 14px;font-size:13px;color:var(--text-muted);width:200px;cursor:text;transition:border-color .2s}
+
+.search-bar:hover{border-color:var(--blue-vivid)}
+
+.icon-btn{width:38px;height:38px;border-radius:10px;background:var(--bg);border:1.5px solid var(--border);display:flex;align-items:center;justify-content:center;cursor:pointer;position:relative;font-size:16px;transition:all .18s}
+
+.icon-btn:hover{background:var(--blue-soft);border-color:var(--blue-vivid)}
+
+/* BODY LAYOUT - THREE PANELS */
+.body-layout{flex:1;display:flex;gap:0;overflow:hidden;min-width:0}
+
+/* LEFT PANEL - SCROLLABLE */
+.left-panel{width:280px;padding:20px;background:var(--card);border-right:1.5px solid var(--border);overflow-y:auto;flex-shrink:0}
+
+.profile-card{background:linear-gradient(135deg,var(--blue-vivid),#A78BFA);border-radius:var(--radius);padding:20px;color:white;margin-bottom:20px;box-shadow:var(--shadow-md);text-align:center}
+
+.profile-avatar{width:60px;height:60px;border-radius:50%;background:rgba(255,255,255,0.2);display:flex;align-items:center;justify-content:center;font-size:28px;margin:0 auto 12px;border:3px solid white}
+
+.profile-name{font-family:'Bricolage Grotesque',sans-serif;font-size:16px;font-weight:700;margin-bottom:4px}
+
+.profile-role{font-size:12px;opacity:0.9}
+
+.profile-meta{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:16px;padding-top:16px;border-top:1px solid rgba(255,255,255,0.3)}
+
+.meta-item{text-align:center;font-size:11px}
+
+.meta-val{font-family:'Bricolage Grotesque',sans-serif;font-size:18px;font-weight:700;display:block}
+
+.meta-lbl{opacity:0.8;font-size:10px;margin-top:2px}
+
+.stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px}
+
+.stat-mini{background:var(--bg);border:1.5px solid var(--border);border-radius:var(--radius-sm);padding:12px;text-align:center}
+
+.stat-mini-val{font-family:'Bricolage Grotesque',sans-serif;font-size:18px;font-weight:700;color:var(--blue-vivid)}
+
+.stat-mini-lbl{font-size:11px;color:var(--text-muted);margin-top:4px}
+
+.section-title{font-family:'Bricolage Grotesque',sans-serif;font-size:13px;font-weight:700;margin:16px 0 10px;color:var(--text-primary);text-transform:uppercase;letter-spacing:.5px}
+
+.list-item{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border);font-size:12px}
+
+.list-item:last-child{border-bottom:none}
+
+.list-icon{font-size:14px}
+
+.list-text{flex:1}
+
+.list-badge{background:var(--blue-soft);color:var(--blue-vivid);padding:2px 6px;border-radius:4px;font-size:10px;font-weight:600}
+
+/* MIDDLE PANEL - SCROLLABLE LEADERBOARD */
+.middle{flex:1;padding:20px;display:flex;flex-direction:column;gap:16px;overflow-y:auto;min-width:0}
+
+.leaderboard-card{background:var(--card);border-radius:var(--radius);border:1.5px solid var(--border);padding:20px;box-shadow:var(--shadow-sm)}
+
+.leaderboard-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}
+
+.leaderboard-title{font-family:'Bricolage Grotesque',sans-serif;font-size:18px;font-weight:700}
+
+.update-badge{background:var(--accent-green);color:white;padding:4px 10px;border-radius:20px;font-size:11px;font-weight:600}
+
+.leaderboard-list{display:flex;flex-direction:column;gap:10px;max-height:calc(100vh - 250px);overflow-y:auto}
+
+.leaderboard-item{display:flex;align-items:center;gap:12px;padding:14px;background:var(--bg);border-radius:var(--radius-sm);transition:all .2s;cursor:pointer}
+
+.leaderboard-item:hover{background:var(--blue-soft);border-left:3px solid var(--blue-vivid);padding-left:11px}
+
+.rank-badge{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:14px;flex-shrink:0}
+
+.rank-1{background:#FEF9C3;color:#CA8A04}
+
+.rank-2{background:#F1F5F9;color:#64748B}
+
+.rank-3{background:#FEF3C7;color:#B45309}
+
+.rank-other{background:var(--blue-soft);color:var(--blue-vivid)}
+
+.student-avatar{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,var(--blue-vivid),#A78BFA);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:white;flex-shrink:0}
+
+.leaderboard-info{flex:1;min-width:0}
+
+.student-name{font-size:13px;font-weight:700;color:var(--text-primary)}
+
+.student-class{font-size:11px;color:var(--text-muted)}
+
+.student-score{font-family:'Bricolage Grotesque',sans-serif;font-size:16px;font-weight:800;color:var(--blue-vivid);flex-shrink:0}
+
+/* RIGHT PANEL - SCROLLABLE STUDENTS */
+.right-panel{width:320px;padding:20px 20px 20px 0;background:var(--card);border-left:1.5px solid var(--border);display:flex;flex-direction:column;gap:14px;overflow-y:auto;flex-shrink:0}
+
+.rp-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:4px}
+
+.rp-title{font-family:'Bricolage Grotesque',sans-serif;font-size:14px;font-weight:700}
+
+.rp-action{font-size:12px;font-weight:600;color:var(--blue-vivid);cursor:pointer;transition:color .2s}
+
+.rp-action:hover{color:var(--blue-dark)}
+
+.search-input{width:100%;padding:8px 12px;border:1.5px solid var(--border);border-radius:var(--radius-sm);font-size:12px;background:var(--bg);color:var(--text-primary);transition:border-color .2s}
+
+.search-input:focus{outline:none;border-color:var(--blue-vivid);box-shadow:0 0 0 3px var(--blue-soft)}
+
+.student-list{display:flex;flex-direction:column;gap:8px;flex:1;overflow-y:auto}
+
+.student-item{display:flex;align-items:center;gap:10px;padding:10px;background:var(--bg);border-radius:var(--radius-sm);cursor:pointer;transition:all .2s;border:1.5px solid transparent}
+
+.student-item:hover{background:var(--blue-soft);border-color:var(--blue-vivid)}
+
+.student-item.active{background:var(--blue-soft);border-color:var(--blue-vivid);box-shadow:var(--shadow-sm)}
+
+.si-avatar{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,var(--blue-vivid),#A78BFA);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:white;flex-shrink:0}
+
+.si-info{flex:1;min-width:0}
+
+.si-name{font-size:12px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+.si-meta{font-size:10px;color:var(--text-muted)}
+
+.si-status{width:6px;height:6px;border-radius:50%;flex-shrink:0;background:var(--accent-green)}
+
+.si-status.inactive{background:#D1D5DB}
+
+.rp-card{background:var(--bg);border:1.5px solid var(--border);border-radius:var(--radius-sm);padding:12px;margin-bottom:12px}
+
+.rp-stat{display:flex;justify-content:space-between;align-items:center;padding:8px 0;font-size:12px;border-bottom:1px solid var(--border)}
+
+.rp-stat:last-child{border-bottom:none}
+
+.stat-label{color:var(--text-muted);font-weight:500}
+
+.stat-value{font-family:'Bricolage Grotesque',sans-serif;font-weight:700;color:var(--blue-vivid);font-size:14px}
+
+.progress-bar{height:4px;background:var(--border);border-radius:20px;overflow:hidden}
+
+.progress-fill{height:100%;background:linear-gradient(90deg,var(--blue-vivid),#A78BFA);transition:width .6s ease}
+
+.analytics-section{background:var(--bg);border:1.5px solid var(--border);border-radius:var(--radius-sm);padding:12px;margin-bottom:12px}
+
+.analytics-header{font-family:'Bricolage Grotesque',sans-serif;font-size:12px;font-weight:700;color:var(--text-primary);margin-bottom:10px;text-transform:uppercase;letter-spacing:.5px}
+
+.analytics-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+
+.analytics-box{background:white;padding:10px;border-radius:var(--radius-sm);border:1px solid var(--border);text-align:center}
+
+.analytics-label{font-size:10px;color:var(--text-muted);margin-bottom:3px;text-transform:uppercase}
+
+.analytics-value{font-family:'Bricolage Grotesque',sans-serif;font-size:16px;font-weight:700;color:var(--blue-vivid)}
+
+/* SCROLLBAR STYLING */
+.left-panel::-webkit-scrollbar,
+.middle::-webkit-scrollbar,
+.right-panel::-webkit-scrollbar,
+.student-list::-webkit-scrollbar,
+.leaderboard-list::-webkit-scrollbar{width:6px}
+
+.left-panel::-webkit-scrollbar-track,
+.middle::-webkit-scrollbar-track,
+.right-panel::-webkit-scrollbar-track,
+.student-list::-webkit-scrollbar-track,
+.leaderboard-list::-webkit-scrollbar-track{background:transparent}
+
+.left-panel::-webkit-scrollbar-thumb,
+.middle::-webkit-scrollbar-thumb,
+.right-panel::-webkit-scrollbar-thumb,
+.student-list::-webkit-scrollbar-thumb,
+.leaderboard-list::-webkit-scrollbar-thumb{background:var(--blue-mid);border-radius:20px}
+
+.left-panel::-webkit-scrollbar-thumb:hover,
+.middle::-webkit-scrollbar-thumb:hover,
+.right-panel::-webkit-scrollbar-thumb:hover,
+.student-list::-webkit-scrollbar-thumb:hover,
+.leaderboard-list::-webkit-scrollbar-thumb:hover{background:var(--blue-vivid)}
+
+/* RESPONSIVE */
+@media (max-width:1400px){
+  .left-panel{width:240px}
+  .right-panel{width:280px}
+}
+
+@media (max-width:1100px){
+  .left-panel{display:none}
+  .right-panel{width:320px}
+}
+
+@media (max-width:768px){
+  .sidebar{width:60px}
+  .brand-name{display:none}
+  .nav-group-label{display:none}
+  .nav-item span:last-child{display:none}
+  .right-panel{display:none}
+  .left-panel{display:none}
+}
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="brand">
+    <div class="brand-icon"><svg viewBox="0 0 24 24"><path d="M12 3L1 9l4 2.18v6L12 21l7-3.82v-6L23 9zm0 2.26L19.16 9 12 12.74 4.84 9zm5 9.26L12 18.74 7 14.52V12.5l5 2.74 5-2.74z"/></svg></div>
+    <div class="brand-name">Edu<span>Board</span></div>
+  </div>
+  
+  <div class="nav-group">
+    <span class="nav-group-label">Main</span>
+    <a class="nav-item active" href="/teacher-dashboard"><span>🏠</span> Dashboard</a>
+    <a class="nav-item" href="/my-subject"><span>📚</span> My Subject</a>
+    <a class="nav-item" href="/create-quiz"><span>🎯</span> Create Quiz</a>
+    <a class="nav-item" href="/students"><span>👥</span> Student Records</a>
+  </div>
+
+  <div class="nav-group" style="margin-top:auto">
+    <span class="nav-group-label">Support</span>
+    <a class="nav-item" href="#" onclick="openHelp()"><span>❓</span> Teacher Help</a>
+  </div>
+
+  <div class="sidebar-user">
+    <div class="su-avatar">{{ user.initials }}</div>
+    <div class="su-info">
+      <div class="su-name">{{ user.full_name }}</div>
+      <div class="su-role">Teacher</div>
+    </div>
+    <a href="/logout" class="su-logout" title="Logout">⏻</a>
+  </div>
+</aside>
+
+<!-- MAIN CONTENT -->
+<div class="content-wrapper">
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <div class="topbar-left">
+      <h1>👋 Welcome back, {{ user.first_name }}!</h1>
+      <p>{{ now }} • {{ user.subject or "EduBoard Teacher" }}</p>
+    </div>
+    <div class="topbar-right">
+      <button class="icon-btn" title="Notifications">🔔</button>
+    </div>
+  </div>
+
+  <!-- BODY LAYOUT -->
+  <div class="body-layout">
+    
+    <!-- LEFT PANEL - TEACHER PROFILE -->
+    <div class="left-panel">
+      <!-- Profile Card -->
+      <div class="profile-card">
+        <div class="profile-avatar">{{ user.initials }}</div>
+        <div class="profile-name">{{ user.full_name }}</div>
+        <div class="profile-role">{{ user.subject or "Teacher" }}</div>
+        <div class="profile-meta">
+          <div class="meta-item">
+            <span class="meta-val">{{ teacher_stats.total_students }}</span>
+            <span class="meta-lbl">Students</span>
+          </div>
+          <div class="meta-item">
+            <span class="meta-val">{{ teacher_stats.total_quizzes }}</span>
+            <span class="meta-lbl">Quizzes</span>
+          </div>
+          <div class="meta-item">
+            <span class="meta-val">{{ teacher_stats.avg_score }}%</span>
+            <span class="meta-lbl">Avg Score</span>
+          </div>
+          <div class="meta-item">
+            <span class="meta-val">{{ teacher_stats.top_score }}%</span>
+            <span class="meta-lbl">Top Score</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick Stats -->
+      <div class="section-title">📈 Quick Stats</div>
+      <div class="stats-grid">
+        <div class="stat-mini">
+          <div class="stat-mini-val">{{ teacher_stats.avg_score }}%</div>
+          <div class="stat-mini-lbl">Avg Score</div>
+        </div>
+        <div class="stat-mini">
+          <div class="stat-mini-val">{{ teacher_stats.total_students }}</div>
+          <div class="stat-mini-lbl">Students</div>
+        </div>
+        <div class="stat-mini">
+          <div class="stat-mini-val">{{ teacher_stats.total_quizzes }}</div>
+          <div class="stat-mini-lbl">Quizzes</div>
+        </div>
+        <div class="stat-mini">
+          <div class="stat-mini-val">{{ teacher_stats.top_score }}%</div>
+          <div class="stat-mini-lbl">Top Score</div>
+        </div>
+      </div>
+
+      <!-- Class Schedule -->
+      <div class="section-title">📅 Today's Schedule</div>
+      <div class="list-item">
+        <div class="list-icon">🕐</div>
+        <div class="list-text">
+          <div style="font-weight:600">09:00 AM</div>
+          <div style="font-size:10px;color:var(--text-muted)">Semester 2 - Batch A</div>
+        </div>
+      </div>
+      <div class="list-item">
+        <div class="list-icon">🕑</div>
+        <div class="list-text">
+          <div style="font-weight:600">10:30 AM</div>
+          <div style="font-size:10px;color:var(--text-muted)">Semester 4 - Batch B</div>
+        </div>
+      </div>
+      <div class="list-item">
+        <div class="list-icon">🕒</div>
+        <div class="list-text">
+          <div style="font-weight:600">01:30 PM</div>
+          <div style="font-size:10px;color:var(--text-muted)">Semester 6 - Batch C</div>
+        </div>
+      </div>
+
+      <!-- Recent Activity -->
+      <div class="section-title">📊 Recent Activity</div>
+      <div class="list-item">
+        <div class="list-icon">📝</div>
+        <div class="list-text">Quiz: Security Protocols</div>
+        <div class="list-badge">142</div>
+      </div>
+      <div class="list-item">
+        <div class="list-icon">✅</div>
+        <div class="list-text">Assignments Done</div>
+        <div class="list-badge">128</div>
+      </div>
+      <div class="list-item">
+        <div class="list-icon">👥</div>
+        <div class="list-text">Active Today</div>
+        <div class="list-badge">135</div>
+      </div>
+    </div>
+
+    <!-- MIDDLE - LEADERBOARD -->
+    <div class="middle">
+      <div class="leaderboard-card">
+        <div class="leaderboard-header">
+          <div class="leaderboard-title">🏆 Quiz Leaderboard</div>
+          <div class="update-badge">✓ Live Updates</div>
+        </div>
+        
+        <div class="leaderboard-list" id="leaderboard">
+          {% set rank_cls = ['rank-1','rank-2','rank-3'] %}
+          {% set av_cols = ['linear-gradient(135deg,#FF5C3A,#FCA5A5)','linear-gradient(135deg,#7C3AED,#A78BFA)','linear-gradient(135deg,#1DBF73,#6EE7B7)','linear-gradient(135deg,#3B82F6,#93C5FD)','linear-gradient(135deg,#F59E0B,#FCD34D)','linear-gradient(135deg,#06B6D4,#67E8F9)','linear-gradient(135deg,#EC4899,#F472B6)','linear-gradient(135deg,#8B5CF6,#C4B5FD)','linear-gradient(135deg,#10B981,#6EE7B7)','linear-gradient(135deg,#D946EF,#F0ABFC)'] %}
+          {% if leaderboard %}
+            {% for s in leaderboard %}
+            <div class="leaderboard-item" onclick="selectStudent(this, {{ s.id }})">
+              <div class="rank-badge {{ rank_cls[loop.index0] if loop.index0 < 3 else 'rank-other' }}">{{ loop.index }}</div>
+              <div class="student-avatar" style="background:{{ av_cols[loop.index0 % 10] }}">{{ s.initials }}</div>
+              <div class="leaderboard-info">
+                <div class="student-name">{{ s.name }}</div>
+                <div class="student-class">{{ s.best_subject }} · {{ s.quizzes }} quiz{{ 'zes' if s.quizzes != 1 else '' }}</div>
+              </div>
+              <div class="student-score">{{ s.best }}%</div>
+            </div>
+            {% endfor %}
+          {% else %}
+            <div style="padding:32px;text-align:center;color:var(--text-muted);font-size:13px">
+              🎯 No quiz data yet. Students will appear here once they take quizzes.
+            </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT PANEL - STUDENTS LIST -->
+    <div class="right-panel">
+      <div class="rp-header">
+        <div class="rp-title">👥 My Students</div>
+      </div>
+      <input class="search-input" type="text" id="student-search" placeholder="🔍 Search students..." oninput="filterStudents()">
+
+      <div class="student-list" id="student-list">
+        {% set av_cols = ['linear-gradient(135deg,#FF5C3A,#FCA5A5)','linear-gradient(135deg,#7C3AED,#A78BFA)','linear-gradient(135deg,#1DBF73,#6EE7B7)','linear-gradient(135deg,#3B82F6,#93C5FD)','linear-gradient(135deg,#F59E0B,#FCD34D)','linear-gradient(135deg,#06B6D4,#67E8F9)','linear-gradient(135deg,#EC4899,#F472B6)','linear-gradient(135deg,#8B5CF6,#C4B5FD)','linear-gradient(135deg,#10B981,#6EE7B7)','linear-gradient(135deg,#D946EF,#F0ABFC)'] %}
+        {% if students %}
+          {% for s in students %}
+          <div class="student-item" onclick="selectStudent(this, {{ s.id }})">
+            <div class="si-avatar" style="background:{{ av_cols[loop.index0 % 10] }}">{{ s.initials }}</div>
+            <div class="si-info">
+              <div class="si-name">{{ s.name }}</div>
+              <div class="si-meta">{{ s.grade or 'Student' }}{% if s.section %} · {{ s.section }}{% endif %} · {{ s.quizzes }} quiz{{ 'zes' if s.quizzes != 1 else '' }}</div>
+            </div>
+            <div class="si-status {% if s.quizzes == 0 %}inactive{% endif %}"></div>
+          </div>
+          {% endfor %}
+        {% else %}
+          <div style="padding:20px;text-align:center;color:var(--text-muted);font-size:13px">No students registered yet.</div>
+        {% endif %}
+      </div>
+
+      <!-- Selected Student Details -->
+      <div id="student-detail" style="display:none">
+        <div class="rp-card">
+          <div style="margin-bottom:12px;padding-bottom:12px;border-bottom:1.5px solid var(--border)">
+            <div class="rp-title" id="detail-name">Student Name</div>
+            <div style="font-size:11px;color:var(--text-muted);margin-top:2px" id="detail-semester">Semester 2</div>
+          </div>
+
+          <!-- Analytics Section -->
+          <div class="analytics-section">
+            <div class="analytics-header">📊 Analytics</div>
+            <div class="analytics-grid">
+              <div class="analytics-box">
+                <div class="analytics-label">Score</div>
+                <div class="analytics-value" id="detail-score">95%</div>
+              </div>
+              <div class="analytics-box">
+                <div class="analytics-label">Avg Score</div>
+                <div class="analytics-value" id="detail-avg">92%</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="rp-stat">
+            <span class="stat-label">Attendance</span>
+            <span class="stat-value" id="detail-attendance">87%</span>
+          </div>
+          <div class="rp-stat">
+            <span class="stat-label">Quizzes Taken</span>
+            <span class="stat-value" id="detail-quizzes">12</span>
+          </div>
+          <div style="margin-top:12px">
+            <div style="font-size:11px;font-weight:600;margin-bottom:4px">Progress</div>
+            <div class="progress-bar">
+              <div class="progress-fill" style="width:92%"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── Student selection — fetches live data ──
+function selectStudent(element, studentId) {
+  document.querySelectorAll('.student-item, .leaderboard-item').forEach(e => e.classList.remove('active'));
+  element.classList.add('active');
+  fetch('/api/student/' + studentId)
+    .then(r => r.json())
+    .then(d => {
+      document.getElementById('detail-name').textContent       = d.name;
+      document.getElementById('detail-semester').textContent   = (d.grade || 'Student') + (d.section ? ' · ' + d.section : '');
+      document.getElementById('detail-score').textContent      = d.best + '%';
+      document.getElementById('detail-avg').textContent        = d.avg + '%';
+      document.getElementById('detail-attendance').textContent = d.avg + '%';
+      document.getElementById('detail-quizzes').textContent    = d.quizzes;
+      document.querySelector('#student-detail .progress-fill').style.width = d.avg + '%';
+      document.getElementById('student-detail').style.display  = 'block';
+      setTimeout(() => {
+        document.getElementById('student-detail').scrollIntoView({ behavior:'smooth', block:'nearest' });
+      }, 100);
+    })
+    .catch(() => alert('Could not load student data'));
+}
+
+// ── Single search bar — filters student list AND leaderboard ──
+function filterStudents() {
+  const q = document.getElementById('student-search').value.toLowerCase().trim();
+
+  // Filter right-panel student list
+  document.querySelectorAll('.student-item').forEach(item => {
+    const name = item.querySelector('.si-name').textContent.toLowerCase();
+    item.style.display = (!q || name.includes(q)) ? 'flex' : 'none';
+  });
+
+  // Also highlight matching names in leaderboard
+  document.querySelectorAll('.leaderboard-item').forEach(item => {
+    const name = item.querySelector('.student-name').textContent.toLowerCase();
+    item.style.opacity = (!q || name.includes(q)) ? '1' : '0.25';
+  });
+
+  // Hide detail panel when searching
+  if (q) document.getElementById('student-detail').style.display = 'none';
+}
+
+// ── Teacher Help modal ──
+function openHelp() {
+  document.getElementById('help-modal').style.display = 'flex';
+}
+function closeHelp() {
+  document.getElementById('help-modal').style.display = 'none';
+}
+// Close on backdrop click
+document.addEventListener('click', function(e) {
+  const modal = document.getElementById('help-modal');
+  if (e.target === modal) closeHelp();
+});
+</script>
+
+<!-- ── TEACHER HELP MODAL ── -->
+<div id="help-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:9999;align-items:center;justify-content:center;">
+  <div style="background:#fff;border-radius:16px;padding:32px;max-width:480px;width:90%;box-shadow:0 20px 60px rgba(124,58,237,0.2);position:relative;">
+    <button onclick="closeHelp()" style="position:absolute;top:16px;right:16px;background:var(--blue-soft);border:none;border-radius:8px;width:32px;height:32px;font-size:16px;cursor:pointer;color:var(--blue-vivid)">✕</button>
+    <div style="font-family:'Bricolage Grotesque',sans-serif;font-size:20px;font-weight:800;margin-bottom:4px">❓ Teacher Help</div>
+    <div style="font-size:12px;color:var(--text-muted);margin-bottom:20px">Quick guide to using your dashboard</div>
+    <div style="display:flex;flex-direction:column;gap:14px;">
+      <div style="background:var(--blue-soft);border-radius:10px;padding:14px;">
+        <div style="font-weight:700;font-size:13px;margin-bottom:4px">🏆 Leaderboard</div>
+        <div style="font-size:12px;color:var(--text-muted)">Shows students ranked by their best quiz score. Click any student to see their detailed performance.</div>
+      </div>
+      <div style="background:var(--blue-soft);border-radius:10px;padding:14px;">
+        <div style="font-weight:700;font-size:13px;margin-bottom:4px">🔍 Search Students</div>
+        <div style="font-size:12px;color:var(--text-muted)">Use the search bar on the right panel to find a student by name. The leaderboard will also highlight matching students.</div>
+      </div>
+      <div style="background:var(--blue-soft);border-radius:10px;padding:14px;">
+        <div style="font-weight:700;font-size:13px;margin-bottom:4px">📊 Student Detail</div>
+        <div style="font-size:12px;color:var(--text-muted)">Click any student card to view their best score, average score, and total quizzes taken.</div>
+      </div>
+      <div style="background:var(--blue-soft);border-radius:10px;padding:14px;">
+        <div style="font-weight:700;font-size:13px;margin-bottom:4px">🟢 Status Dot</div>
+        <div style="font-size:12px;color:var(--text-muted)">Green dot = student has taken at least one quiz. Grey dot = no quizzes taken yet.</div>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

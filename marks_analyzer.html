@@ -1,0 +1,942 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Marks Analyzer — EduBoard</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Bricolage+Grotesque:wght@400;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+/* ── DESIGN TOKENS (match dashboard) ─── */
+:root{
+  --blue-vivid:#7C3AED;
+  --blue-soft:#F5F3FF;
+  --blue-mid:#DDD6FE;
+  --blue-dark:#4C1D95;
+  --accent-coral:#FF5C3A;
+  --accent-green:#1DBF73;
+  --accent-amber:#F59E0B;
+  --accent-cyan:#0EA5E9;
+  --bg:#FAF8FF;
+  --card:#FFFFFF;
+  --sidebar:#FFFFFF;
+  --text-primary:#1E1030;
+  --text-muted:#6B6B8A;
+  --text-light:#C4B8E8;
+  --border:#EDE9F8;
+  --shadow-sm:0 1px 4px rgba(124,58,237,0.06);
+  --shadow-md:0 4px 20px rgba(124,58,237,0.10);
+  --shadow-lg:0 8px 40px rgba(124,58,237,0.14);
+  --radius:14px;
+  --radius-sm:9px;
+}
+
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(--text-primary);height:100vh;display:flex;overflow:hidden}
+a{text-decoration:none;color:inherit}
+
+/* ── SIDEBAR ─────────────────────────── */
+.sidebar{width:218px;height:100vh;background:var(--sidebar);border-right:1.5px solid var(--border);display:flex;flex-direction:column;padding:28px 16px 0;flex-shrink:0;animation:slideInLeft .45s ease both}
+@keyframes slideInLeft{from{opacity:0;transform:translateX(-18px)}to{opacity:1;transform:translateX(0)}}
+.brand{display:flex;align-items:center;gap:10px;padding:0 6px 28px}
+.brand-icon{width:34px;height:34px;background:var(--blue-vivid);border-radius:10px;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 14px rgba(124,58,237,0.35)}
+.brand-icon svg{width:18px;height:18px;fill:white}
+.brand-name{font-family:'Bricolage Grotesque',sans-serif;font-size:17px;font-weight:800;color:var(--text-primary);letter-spacing:-0.5px}
+.brand-name span{color:var(--blue-vivid)}
+.nav-group{margin-bottom:6px}
+.nav-group-label{font-size:10px;font-weight:700;color:var(--text-light);text-transform:uppercase;letter-spacing:1.2px;padding:0 8px 8px;display:block}
+.nav-item{display:flex;align-items:center;gap:11px;padding:10px 12px;border-radius:var(--radius-sm);font-size:13.5px;font-weight:500;color:var(--text-muted);cursor:pointer;transition:all .18s;margin-bottom:2px;user-select:none}
+.nav-item:hover{background:var(--blue-soft);color:var(--blue-vivid);transform:translateX(2px)}
+.nav-item.active{background:var(--blue-vivid);color:white;font-weight:600;box-shadow:0 4px 16px rgba(124,58,237,0.30)}
+.nav-item.active:hover{transform:none}
+.nav-pill-blue{margin-left:auto;font-size:10px;font-weight:700;background:var(--blue-soft);color:var(--blue-vivid);padding:2px 7px;border-radius:20px}
+.sidebar-spacer{flex:1}
+.sidebar-bottom{padding:16px 0 0;border-top:1.5px solid var(--border);margin-bottom:0}
+.sidebar-user{display:flex;align-items:center;gap:10px;padding:12px;background:var(--blue-soft);border-radius:var(--radius-sm)}
+.su-avatar{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,var(--blue-vivid),#A78BFA);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;color:white;flex-shrink:0}
+.su-info{flex:1;min-width:0}
+.su-name{font-size:13px;font-weight:700;color:var(--text-primary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.su-role{font-size:11px;color:var(--text-muted)}
+.logout-btn{display:flex;align-items:center;gap:9px;padding:11px 12px;border-radius:var(--radius-sm);font-size:13px;font-weight:600;color:var(--accent-coral);cursor:pointer;transition:all .18s;margin-top:6px;margin-bottom:20px;border:1.5px solid transparent;background:transparent;width:100%;font-family:inherit}
+.logout-btn:hover{background:#FFF1EF;border-color:#FECACA;transform:translateX(2px)}
+
+/* ── CONTENT SHELL ───────────────────── */
+.content{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0;height:100vh}
+
+/* ── TOPBAR ──────────────────────────── */
+.topbar{background:var(--card);border-bottom:1.5px solid var(--border);padding:14px 28px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;animation:fadeDown .4s ease both}
+@keyframes fadeDown{from{opacity:0;transform:translateY(-10px)}to{opacity:1;transform:translateY(0)}}
+.topbar-left h1{font-family:'Bricolage Grotesque',sans-serif;font-size:19px;font-weight:800;letter-spacing:-0.5px}
+.topbar-left p{font-size:12px;color:var(--text-muted);margin-top:1px}
+.topbar-badge{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:700;background:var(--blue-soft);color:var(--blue-vivid);padding:4px 12px;border-radius:20px;border:1px solid var(--blue-mid)}
+.topbar-badge .dot{width:6px;height:6px;background:var(--blue-vivid);border-radius:50%;animation:blink 1.8s ease-in-out infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+
+/* ── SCROLL AREA ─────────────────────── */
+.scroll-area{flex:1;overflow-y:auto;padding:24px 28px 48px;min-height:0}
+.scroll-area::-webkit-scrollbar{width:5px}
+.scroll-area::-webkit-scrollbar-thumb{background:var(--blue-mid);border-radius:20px}
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+
+/* ── PROGRESS STRIP ──────────────────── */
+.progress-strip{display:flex;align-items:center;gap:14px;background:var(--card);border:1.5px solid var(--border);border-radius:var(--radius);padding:12px 18px;margin-bottom:20px;box-shadow:var(--shadow-sm);animation:fadeUp .4s ease .05s both}
+.ps-label{font-size:11px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.6px;white-space:nowrap}
+.ps-track{flex:1;height:6px;background:var(--blue-soft);border-radius:100px;overflow:hidden;border:1px solid var(--blue-mid)}
+.ps-fill{height:100%;background:linear-gradient(90deg,var(--blue-vivid),#A78BFA);border-radius:100px;transition:width .4s cubic-bezier(.16,1,.3,1);width:0%}
+.ps-pct{font-family:'Bricolage Grotesque',sans-serif;font-size:14px;font-weight:800;color:var(--blue-vivid);min-width:36px;text-align:right}
+
+/* ── SECTION CARDS ───────────────────── */
+.section{background:var(--card);border:1.5px solid var(--border);border-radius:var(--radius);padding:22px;margin-bottom:14px;box-shadow:var(--shadow-sm);animation:fadeUp .4s ease both;transition:box-shadow .2s}
+.section:hover{box-shadow:var(--shadow-md)}
+.section:nth-child(1){animation-delay:.08s}
+.section:nth-child(2){animation-delay:.13s}
+.section:nth-child(3){animation-delay:.18s}
+.section:nth-child(4){animation-delay:.23s}
+.section:nth-child(5){animation-delay:.28s}
+.section-head{display:flex;align-items:center;gap:12px;margin-bottom:18px;padding-bottom:14px;border-bottom:1.5px solid var(--border)}
+.section-num{font-size:11px;font-weight:700;color:var(--blue-vivid);background:var(--blue-soft);border:1px solid var(--blue-mid);padding:2px 9px;border-radius:20px;letter-spacing:.04em}
+.section-title{font-family:'Bricolage Grotesque',sans-serif;font-size:15px;font-weight:700;color:var(--text-primary)}
+.section-desc{font-size:12px;color:var(--text-muted);margin-top:2px}
+
+/* ── GRID LAYOUTS ────────────────────── */
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.g3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.g5{display:grid;grid-template-columns:repeat(5,1fr);gap:10px}
+.full{grid-column:1/-1}
+@media(max-width:600px){.g2{grid-template-columns:1fr}.g3{grid-template-columns:1fr 1fr}.g5{grid-template-columns:1fr 1fr}}
+
+/* ── FIELDS ──────────────────────────── */
+.field{display:flex;flex-direction:column;gap:5px}
+.field label{font-size:11px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px}
+.field label .req{color:var(--blue-vivid);margin-left:2px}
+.field input,.field select{
+  background:var(--bg);border:1.5px solid var(--border);border-radius:var(--radius-sm);
+  color:var(--text-primary);font-family:'Plus Jakarta Sans',sans-serif;font-size:13.5px;
+  padding:9px 12px;outline:none;transition:border-color .18s,box-shadow .18s;width:100%
+}
+.field input::placeholder{color:var(--text-light)}
+.field select option{background:var(--card)}
+.field input:focus,.field select:focus{
+  border-color:var(--blue-vivid);background:var(--card);
+  box-shadow:0 0 0 3px rgba(124,58,237,0.10)
+}
+.field input.ok{border-color:rgba(29,191,115,.5)!important}
+
+/* Range */
+.range-row{display:flex;align-items:center;gap:12px}
+.range-val{font-family:'Bricolage Grotesque',sans-serif;font-size:16px;font-weight:800;color:var(--blue-vivid);min-width:52px;text-align:right}
+input[type=range]{-webkit-appearance:none;flex:1;height:5px;background:var(--blue-mid);border-radius:100px;padding:0;border:none;outline:none}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;background:var(--blue-vivid);border-radius:50%;cursor:pointer;box-shadow:0 2px 8px rgba(124,58,237,0.35)}
+input[type=range]:focus{box-shadow:none;background:var(--blue-mid)}
+
+/* Sem columns */
+.sem-col{background:var(--bg);border:1.5px solid var(--border);border-radius:var(--radius-sm);padding:12px 10px;display:flex;flex-direction:column;gap:8px;transition:border-color .2s}
+.sem-col:focus-within{border-color:var(--blue-vivid);background:var(--card)}
+.sem-badge{font-size:10px;font-weight:700;color:var(--blue-vivid);letter-spacing:.08em;text-transform:uppercase}
+
+/* ── ACTION BUTTONS ──────────────────── */
+.btn-row{display:flex;gap:12px;flex-wrap:wrap;margin-top:4px;margin-bottom:4px}
+.btn-primary{
+  flex:1;min-width:200px;padding:14px 24px;
+  border:none;border-radius:var(--radius-sm);
+  background:var(--blue-vivid);color:white;
+  font-family:'Plus Jakarta Sans',sans-serif;font-size:14px;font-weight:700;
+  cursor:pointer;transition:transform .15s,box-shadow .15s;
+  box-shadow:0 4px 20px rgba(124,58,237,0.30)
+}
+.btn-primary:hover{transform:translateY(-2px);box-shadow:0 8px 32px rgba(124,58,237,0.40)}
+.btn-secondary{
+  padding:14px 22px;border:1.5px solid var(--border);border-radius:var(--radius-sm);
+  background:var(--card);color:var(--text-muted);
+  font-family:'Plus Jakarta Sans',sans-serif;font-size:14px;font-weight:600;cursor:pointer;transition:all .15s
+}
+.btn-secondary:hover{border-color:var(--blue-vivid);color:var(--blue-vivid);background:var(--blue-soft)}
+
+/* ── DIVIDER ─────────────────────────── */
+.divider{display:flex;align-items:center;gap:16px;margin:28px 0}
+.divider-line{flex:1;height:1.5px;background:var(--border)}
+.divider-label{font-size:11px;font-weight:700;color:var(--text-muted);letter-spacing:.06em;text-transform:uppercase;white-space:nowrap}
+
+/* ── RESULTS ─────────────────────────── */
+#results{display:none}
+#results.show{display:block;animation:fadeUp .5s cubic-bezier(.16,1,.3,1) both}
+
+/* ── PREDICTION HERO ─────────────────── */
+.pred-hero{
+  background:var(--card);border:1.5px solid var(--border);border-radius:var(--radius);
+  padding:28px;margin-bottom:14px;position:relative;overflow:hidden;
+  box-shadow:var(--shadow-md)
+}
+.pred-hero::before{
+  content:'';position:absolute;inset:0;
+  background:linear-gradient(135deg,rgba(124,58,237,.05) 0%,transparent 60%);
+  pointer-events:none
+}
+.pred-hero-inner{position:relative;z-index:1;display:flex;gap:24px;align-items:center;flex-wrap:wrap}
+.pred-emoji-ring{
+  width:76px;height:76px;border-radius:50%;
+  border:2px solid var(--blue-mid);
+  display:flex;align-items:center;justify-content:center;
+  font-size:36px;flex-shrink:0;
+  background:var(--blue-soft);
+  box-shadow:0 0 24px rgba(124,58,237,0.15)
+}
+.pred-body{flex:1}
+.pred-tag{font-size:10px;font-weight:700;color:var(--blue-vivid);letter-spacing:.1em;text-transform:uppercase;margin-bottom:6px}
+.pred-title{font-family:'Bricolage Grotesque',sans-serif;font-size:clamp(18px,3vw,26px);font-weight:800;color:var(--text-primary);line-height:1.2;margin-bottom:4px}
+.pred-name{font-size:13px;color:var(--text-muted)}
+.pred-conf{font-size:11px;color:var(--text-light);margin-top:4px;font-weight:500}
+.pred-score-box{
+  background:var(--blue-vivid);border-radius:var(--radius-sm);padding:16px 24px;text-align:center;
+  box-shadow:0 4px 20px rgba(124,58,237,0.35);flex-shrink:0
+}
+.pred-score-num{font-family:'Bricolage Grotesque',sans-serif;font-size:42px;font-weight:800;color:white;line-height:1}
+.pred-score-lbl{font-size:10px;font-weight:600;color:rgba(255,255,255,.7);text-transform:uppercase;letter-spacing:.08em;margin-top:2px}
+
+/* ── KPI STRIP ───────────────────────── */
+.kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:14px}
+@media(max-width:700px){.kpi-grid{grid-template-columns:1fr 1fr}}
+.kpi{background:var(--card);border:1.5px solid var(--border);border-radius:var(--radius);padding:16px;box-shadow:var(--shadow-sm);transition:box-shadow .2s,transform .2s;cursor:default}
+.kpi:hover{box-shadow:var(--shadow-md);transform:translateY(-2px)}
+.kpi-lbl{font-size:10px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px}
+.kpi-val{font-family:'Bricolage Grotesque',sans-serif;font-size:24px;font-weight:800;color:var(--text-primary);line-height:1;margin-bottom:6px}
+.kpi-tag{display:inline-flex;align-items:center;gap:4px;font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px}
+.tag-volt{background:var(--blue-soft);color:var(--blue-vivid);border:1px solid var(--blue-mid)}
+.tag-cyan{background:#E0F2FE;color:#0369A1;border:1px solid #BAE6FD}
+.tag-coral{background:#FEE2E2;color:#B91C1C;border:1px solid #FECACA}
+.tag-amber{background:#FEF3C7;color:#92400E;border:1px solid #FDE68A}
+
+/* ── RISK CARD ───────────────────────── */
+.risk-card{background:var(--card);border:1.5px solid var(--border);border-radius:var(--radius);padding:20px;margin-bottom:14px;display:flex;align-items:center;gap:18px;flex-wrap:wrap;box-shadow:var(--shadow-sm)}
+.risk-badge{padding:7px 16px;border-radius:var(--radius-sm);font-size:13px;font-weight:700;flex-shrink:0}
+.risk-low{background:#DCFCE7;color:#15803D;border:1.5px solid #BBF7D0}
+.risk-moderate{background:#FEF3C7;color:#92400E;border:1.5px solid #FDE68A}
+.risk-high{background:#FEE2E2;color:#B91C1C;border:1.5px solid #FECACA}
+.risk-body{flex:1}
+.risk-title{font-family:'Bricolage Grotesque',sans-serif;font-size:14px;font-weight:700;color:var(--text-primary);margin-bottom:3px}
+.risk-desc{font-size:12.5px;color:var(--text-muted);line-height:1.6}
+.risk-rec{margin-left:auto;text-align:center;background:var(--blue-soft);border:1px solid var(--blue-mid);padding:12px 16px;border-radius:var(--radius-sm)}
+.rec-lbl{font-size:10px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px}
+.rec-val{font-family:'Bricolage Grotesque',sans-serif;font-size:18px;font-weight:800;color:var(--blue-vivid)}
+
+/* ── CHART GRID ──────────────────────── */
+.chart-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}
+@media(max-width:640px){.chart-grid{grid-template-columns:1fr}}
+.chart-card{background:var(--card);border:1.5px solid var(--border);border-radius:var(--radius);padding:20px;box-shadow:var(--shadow-sm)}
+.cc-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+.cc-title{font-family:'Bricolage Grotesque',sans-serif;font-size:14px;font-weight:700;color:var(--text-primary)}
+.cc-sub{font-size:11px;color:var(--text-muted);font-weight:500}
+.chart-wrap{position:relative;height:180px}
+.chart-wrap-tall{height:210px}
+
+/* ── INSIGHTS ────────────────────────── */
+.insights-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:14px}
+@media(max-width:640px){.insights-grid{grid-template-columns:1fr}}
+.ins-card{background:var(--card);border:1.5px solid var(--border);border-radius:var(--radius);padding:20px;box-shadow:var(--shadow-sm)}
+.ins-head{display:flex;align-items:center;gap:8px;margin-bottom:14px;padding-bottom:12px;border-bottom:1.5px solid var(--border)}
+.ins-icon{font-size:16px}
+.ins-title{font-family:'Bricolage Grotesque',sans-serif;font-size:13px;font-weight:700;color:var(--text-primary)}
+.ins-list{display:flex;flex-direction:column;gap:8px}
+.ins-item{display:flex;align-items:flex-start;gap:9px;font-size:12.5px;color:var(--text-muted);line-height:1.5}
+.ins-dot{width:5px;height:5px;border-radius:50%;margin-top:6px;flex-shrink:0}
+
+/* ── SCORE BAR ───────────────────────── */
+.score-bar-list{display:flex;flex-direction:column;gap:10px}
+.sb-row{display:flex;align-items:center;gap:10px}
+.sb-label{font-size:10px;font-weight:600;color:var(--text-muted);width:44px;flex-shrink:0;text-transform:uppercase;letter-spacing:.4px}
+.sb-track{flex:1;height:6px;background:var(--blue-soft);border-radius:100px;overflow:hidden}
+.sb-fill{height:100%;border-radius:100px;transition:width .8s cubic-bezier(.16,1,.3,1)}
+.sb-val{font-family:'Bricolage Grotesque',sans-serif;font-size:12px;font-weight:700;color:var(--text-primary);min-width:34px;text-align:right}
+
+/* ── RESET BTN ───────────────────────── */
+.reset-row{text-align:center;margin-top:8px}
+</style>
+</head>
+<body>
+
+<!-- ════ SIDEBAR ════ -->
+<aside class="sidebar">
+  <div class="brand">
+    <div class="brand-icon"><svg viewBox="0 0 24 24"><path d="M12 3L1 9l4 2.18v6L12 21l7-3.82v-6L23 9zm0 2.26L19.16 9 12 12.74 4.84 9zm5 9.26L12 18.74 7 14.52V12.5l5 2.74 5-2.74z"/></svg></div>
+    <div class="brand-name">Edu<span>Board</span></div>
+  </div>
+
+  <div class="nav-group">
+    <span class="nav-group-label">Main</span>
+    <a class="nav-item" href="/dashboard"><span>🏠</span> Dashboard</a>
+    <a class="nav-item" href="/analytics"><span>📊</span> Analytics <span class="nav-pill-blue">NEW</span></a>
+    <a class="nav-item" href="/quiz"><span>📋</span> Quiz <span class="nav-pill-blue">Live</span></a>
+    <a class="nav-item" href="/leaderboard"><span>🏆</span> Leaderboard</a>
+    <a class="nav-item active" href="/marks-analyzer"><span>📊</span> Marks Analyzer</a>
+    <a class="nav-item" href="/health"><span>❤️</span> Health</a>
+  </div>
+
+  <div class="sidebar-spacer"></div>
+
+  <div class="sidebar-bottom">
+    <div class="sidebar-user">
+      <div class="su-avatar">{{ user.initials }}</div>
+      <div class="su-info">
+        <div class="su-name">{{ user.first_name }}</div>
+        <div class="su-role">{{ user.role|capitalize }}</div>
+      </div>
+    </div>
+    <a href="/logout" class="logout-btn">
+      <span style="font-size:16px">⏻</span> Logout
+    </a>
+  </div>
+</aside>
+
+<!-- ════ CONTENT ════ -->
+<div class="content">
+
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <div class="topbar-left">
+      <h1>📊 Marks Analyzer</h1>
+      <p>Enter your data to get an instant deep analysis and prediction</p>
+    </div>
+    <div style="display:flex;align-items:center;gap:10px">
+      <div class="topbar-badge"><span class="dot"></span> AI-Powered · v2.0</div>
+    </div>
+  </div>
+
+  <!-- SCROLL AREA -->
+  <div class="scroll-area">
+
+    <!-- PROGRESS STRIP -->
+    <div class="progress-strip">
+      <div class="ps-label">Form Completion</div>
+      <div class="ps-track"><div class="ps-fill" id="psFill"></div></div>
+      <div class="ps-pct" id="psPct">0%</div>
+    </div>
+
+    <!-- SECTION 1: IDENTITY -->
+    <div class="section">
+      <div class="section-head">
+        <span class="section-num">01</span>
+        <div>
+          <div class="section-title">Student Identity</div>
+          <div class="section-desc">Basic personal and academic information</div>
+        </div>
+      </div>
+      <div class="g2">
+        <div class="field">
+          <label>Student Name <span class="req">*</span></label>
+          <input type="text" id="f-name" placeholder="e.g. Aarav Sharma" required oninput="updateProgress()">
+        </div>
+        <div class="field">
+          <label>Student ID <span class="req">*</span></label>
+          <input type="text" id="f-sid" placeholder="e.g. STU2024001" required oninput="updateProgress()">
+        </div>
+        <div class="field">
+          <label>Age <span class="req">*</span></label>
+          <input type="number" id="f-age" placeholder="20" min="15" max="35" required oninput="updateProgress()">
+        </div>
+        <div class="field">
+          <label>Current Semester <span class="req">*</span></label>
+          <select id="f-sem" required onchange="buildSemInputs();updateProgress()">
+            <option value="">— Select —</option>
+            <option value="1">Semester 1</option><option value="2">Semester 2</option>
+            <option value="3">Semester 3</option><option value="4">Semester 4</option>
+            <option value="5">Semester 5</option><option value="6">Semester 6</option>
+            <option value="7">Semester 7</option><option value="8">Semester 8</option>
+          </select>
+        </div>
+        <div class="field full">
+          <label>Daily Study Hours <span class="req">*</span></label>
+          <div class="range-row">
+            <input type="range" id="f-study" min="0" max="14" value="4" step="0.5" oninput="document.getElementById('studyLbl').textContent=this.value+' hrs';updateProgress()">
+            <span class="range-val" id="studyLbl">4 hrs</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SECTION 2: MARKS -->
+    <div class="section" id="sec-marks">
+      <div class="section-head">
+        <span class="section-num">02</span>
+        <div>
+          <div class="section-title">Semester Marks <span style="color:var(--text-muted);font-size:12px;font-weight:400">(out of 100)</span></div>
+          <div class="section-desc" id="marks-desc">Select your current semester first</div>
+        </div>
+      </div>
+      <div id="marks-grid" class="g5"></div>
+    </div>
+
+    <!-- SECTION 3: ATTENDANCE -->
+    <div class="section" id="sec-attend">
+      <div class="section-head">
+        <span class="section-num">03</span>
+        <div>
+          <div class="section-title">Attendance <span style="color:var(--text-muted);font-size:12px;font-weight:400">(%)</span></div>
+          <div class="section-desc" id="attend-desc">Select your current semester first</div>
+        </div>
+      </div>
+      <div id="attend-grid" class="g5"></div>
+    </div>
+
+    <!-- SECTION 4: ASSIGNMENTS -->
+    <div class="section" id="sec-assign">
+      <div class="section-head">
+        <span class="section-num">04</span>
+        <div>
+          <div class="section-title">Assignment Marks <span style="color:var(--text-muted);font-size:12px;font-weight:400">(out of 50)</span></div>
+          <div class="section-desc" id="assign-desc">Select your current semester first</div>
+        </div>
+      </div>
+      <div id="assign-grid" class="g5"></div>
+    </div>
+
+    <!-- SECTION 5: BACKLOGS -->
+    <div class="section">
+      <div class="section-head">
+        <span class="section-num">05</span>
+        <div>
+          <div class="section-title">Backlogs</div>
+          <div class="section-desc">Academic backlog status — leave 0 if none</div>
+        </div>
+      </div>
+      <div class="g2">
+        <div class="field">
+          <label>Total Backlogs</label>
+          <input type="number" id="f-tbl" value="0" min="0" max="30" oninput="updateProgress()">
+        </div>
+        <div class="field">
+          <label>Active / Pending Backlogs</label>
+          <input type="number" id="f-abl" value="0" min="0" max="20" oninput="updateProgress()">
+        </div>
+      </div>
+    </div>
+
+    <!-- CTA BUTTONS -->
+    <div class="btn-row">
+      <button class="btn-primary" onclick="runAnalysis()">⚡ Analyse &amp; Predict</button>
+      <button class="btn-secondary" onclick="resetAll()">↺ Reset</button>
+    </div>
+
+    <!-- ══ RESULTS ══ -->
+    <div id="results">
+
+      <div class="divider">
+        <div class="divider-line"></div>
+        <div class="divider-label">Analysis Results</div>
+        <div class="divider-line"></div>
+      </div>
+
+      <!-- Prediction hero -->
+      <div class="pred-hero">
+        <div class="pred-hero-inner">
+          <div class="pred-emoji-ring" id="rEmoji">🎯</div>
+          <div class="pred-body">
+            <div class="pred-tag">Next Semester Prediction</div>
+            <div class="pred-title" id="rTitle">—</div>
+            <div class="pred-name" id="rName">—</div>
+            <div class="pred-conf" id="rConf">—</div>
+          </div>
+          <div class="pred-score-box">
+            <div class="pred-score-num" id="rScore">—</div>
+            <div class="pred-score-lbl">Predicted Score</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- KPI strip -->
+      <div class="kpi-grid">
+        <div class="kpi">
+          <div class="kpi-lbl">Avg Marks</div>
+          <div class="kpi-val" id="kAvgM">—</div>
+          <span class="kpi-tag tag-volt" id="kSemTag">— sems</span>
+        </div>
+        <div class="kpi">
+          <div class="kpi-lbl">Avg Attendance</div>
+          <div class="kpi-val" id="kAvgA">—</div>
+          <span class="kpi-tag" id="kAvgATag">—</span>
+        </div>
+        <div class="kpi">
+          <div class="kpi-lbl">Avg Assignments</div>
+          <div class="kpi-val" id="kAvgAs">—</div>
+          <span class="kpi-tag tag-volt">/ 50</span>
+        </div>
+        <div class="kpi">
+          <div class="kpi-lbl">Marks Trend</div>
+          <div class="kpi-val" id="kTrend">—</div>
+          <span class="kpi-tag" id="kTrendTag">—</span>
+        </div>
+      </div>
+
+      <!-- Risk + recommendation -->
+      <div class="risk-card">
+        <div class="risk-badge" id="riskBadge">—</div>
+        <div class="risk-body">
+          <div class="risk-title" id="riskTitle">—</div>
+          <div class="risk-desc" id="riskDesc">—</div>
+        </div>
+        <div class="risk-rec">
+          <div class="rec-lbl">Rec. Daily Study</div>
+          <div class="rec-val" id="recHours">—</div>
+        </div>
+      </div>
+
+      <!-- Charts row 1 -->
+      <div class="chart-grid">
+        <div class="chart-card">
+          <div class="cc-head">
+            <div class="cc-title">Marks Progression</div>
+            <div class="cc-sub" id="chartMTrend">—</div>
+          </div>
+          <div class="chart-wrap"><canvas id="cMarks"></canvas></div>
+        </div>
+        <div class="chart-card">
+          <div class="cc-head">
+            <div class="cc-title">Attendance Trend</div>
+            <div class="cc-sub" id="chartAAvg">—</div>
+          </div>
+          <div class="chart-wrap"><canvas id="cAttend"></canvas></div>
+        </div>
+      </div>
+
+      <!-- Charts row 2 -->
+      <div class="chart-grid">
+        <div class="chart-card">
+          <div class="cc-head">
+            <div class="cc-title">Performance Radar</div>
+            <div class="cc-sub">Normalised to 100</div>
+          </div>
+          <div class="chart-wrap" style="height:200px"><canvas id="cRadar"></canvas></div>
+        </div>
+        <div class="chart-card">
+          <div class="cc-head">
+            <div class="cc-title">Score Breakdown</div>
+            <div class="cc-sub">Contribution to prediction</div>
+          </div>
+          <div class="score-bar-list" id="scoreBreakdown" style="margin-top:8px"></div>
+        </div>
+      </div>
+
+      <!-- Full-width combo chart -->
+      <div class="chart-card" style="margin-bottom:14px">
+        <div class="cc-head">
+          <div class="cc-title">Combined 5-Semester Overview</div>
+          <div class="cc-sub">Marks · Attendance · Assignments (×2 scaled)</div>
+        </div>
+        <div class="chart-wrap chart-wrap-tall"><canvas id="cCombo"></canvas></div>
+      </div>
+
+      <!-- Insights -->
+      <div class="insights-grid">
+        <div class="ins-card">
+          <div class="ins-head"><span class="ins-icon">💪</span><div class="ins-title">Strengths</div></div>
+          <div class="ins-list" id="insStrengths"></div>
+        </div>
+        <div class="ins-card">
+          <div class="ins-head"><span class="ins-icon">📌</span><div class="ins-title">Areas to Improve</div></div>
+          <div class="ins-list" id="insImprove"></div>
+        </div>
+        <div class="ins-card">
+          <div class="ins-head"><span class="ins-icon">💡</span><div class="ins-title">Recommendations</div></div>
+          <div class="ins-list" id="insRecs"></div>
+        </div>
+      </div>
+
+      <div class="reset-row">
+        <button class="btn-secondary" onclick="resetAll()">↺ Analyse Again</button>
+      </div>
+
+    </div><!-- /results -->
+
+  </div><!-- /scroll-area -->
+</div><!-- /content -->
+
+<script>
+/* ═══════════════════════════════
+   DYNAMIC SEM INPUTS
+═══════════════════════════════ */
+function buildSemInputs() {
+  const sem = parseInt(document.getElementById('f-sem').value) || 0;
+  const n = Math.max(0, sem - 1); // previous sems = current - 1
+
+  const marksGrid  = document.getElementById('marks-grid');
+  const attendGrid = document.getElementById('attend-grid');
+  const assignGrid = document.getElementById('assign-grid');
+
+  marksGrid.innerHTML  = '';
+  attendGrid.innerHTML = '';
+  assignGrid.innerHTML = '';
+
+  const label = n === 0 ? 'Select your current semester first'
+              : `Enter your total marks for each of the ${n} previous semester${n>1?'s':''}`;
+  document.getElementById('marks-desc').textContent  = label;
+  document.getElementById('attend-desc').textContent = n === 0 ? 'Select your current semester first' : `Attendance percentage for each of the ${n} previous semester${n>1?'s':''}`;
+  document.getElementById('assign-desc').textContent = n === 0 ? 'Select your current semester first' : `Total assignment scores for each of the ${n} previous semester${n>1?'s':''}`;
+
+  for (let i = 1; i <= n; i++) {
+    const pad = String(i).padStart(2,'0');
+    marksGrid.innerHTML  += `<div class="sem-col"><div class="sem-badge">SEM ${pad}</div><div class="field"><input type="number" id="m${i}" placeholder="0–100" min="0" max="100" oninput="updateProgress()"></div></div>`;
+    attendGrid.innerHTML += `<div class="sem-col"><div class="sem-badge">SEM ${pad}</div><div class="field"><input type="number" id="a${i}" placeholder="0–100" min="0" max="100" oninput="updateProgress()"></div></div>`;
+    assignGrid.innerHTML += `<div class="sem-col"><div class="sem-badge">SEM ${pad}</div><div class="field"><input type="number" id="as${i}" placeholder="0–50"  min="0" max="50"  oninput="updateProgress()"></div></div>`;
+  }
+  updateProgress();
+}
+
+/* ═══════════════════════════════
+   PROGRESS
+═══════════════════════════════ */
+function getReqIds() {
+  const sem = parseInt(document.getElementById('f-sem').value) || 0;
+  const n   = Math.max(0, sem - 1);
+  const base = ['f-name','f-sid','f-age','f-sem'];
+  for (let i = 1; i <= n; i++) base.push(`m${i}`, `a${i}`, `as${i}`);
+  return base;
+}
+
+function updateProgress() {
+  const ids = getReqIds();
+  const filled = ids.filter(id => {
+    const el = document.getElementById(id);
+    return el && el.value.trim() !== '';
+  }).length;
+  const pct = ids.length > 0 ? Math.round((filled / ids.length) * 100) : 0;
+  document.getElementById('psFill').style.width = pct + '%';
+  document.getElementById('psPct').textContent  = pct + '%';
+}
+
+/* ═══════════════════════════════
+   COLLECT
+═══════════════════════════════ */
+function g(id) { return parseFloat(document.getElementById(id)?.value) || 0; }
+
+function collect() {
+  const sem = parseInt(document.getElementById('f-sem').value) || 1;
+  const n   = Math.max(1, sem - 1);
+  const marks  = [], attend = [], assign = [];
+  for (let i = 1; i <= n; i++) {
+    marks.push(g(`m${i}`));
+    attend.push(g(`a${i}`));
+    assign.push(g(`as${i}`));
+  }
+  return {
+    name:     document.getElementById('f-name').value.trim(),
+    sid:      document.getElementById('f-sid').value.trim(),
+    age:      g('f-age'),
+    sem,
+    n,
+    study:    parseFloat(document.getElementById('f-study').value) || 4,
+    marks, attend, assign,
+    totalBL:  g('f-tbl'),
+    activeBL: g('f-abl'),
+  };
+}
+
+/* ═══════════════════════════════
+   PREDICTION ENGINE
+═══════════════════════════════ */
+function avg(arr) { return arr.reduce((a,b) => a+b, 0) / arr.length; }
+
+function predict(d) {
+  const avgM  = avg(d.marks);
+  const avgA  = avg(d.attend);
+  const avgAs = avg(d.assign);
+  const trend = d.marks[d.n - 1] - d.marks[0];
+
+  const marksContrib  = avgM  * 0.45;
+  const attendContrib = avgA  * 0.20;
+  const assignContrib = (avgAs / 50 * 100) * 0.15;
+  const studyContrib  = d.study * 1.5;
+  const trendContrib  = trend * 0.10;
+  const backlogPenalty= d.activeBL * 2.5;
+
+  let score = marksContrib + attendContrib + assignContrib + studyContrib + trendContrib - backlogPenalty;
+  score = Math.round(Math.max(0, Math.min(100, score)) * 10) / 10;
+
+  const risk = (d.activeBL > 2 || avgA < 65 || avgM < 55) ? 'high'
+             : (d.activeBL > 0 || avgA < 75 || avgM < 65)  ? 'moderate'
+             : 'low';
+
+  const recHours = Math.round((d.study + Math.max(0, (75 - score) / 10)) * 10) / 10;
+
+  const strengths = [];
+  if (avgM >= 80)    strengths.push('Strong academic marks across all semesters');
+  if (avgA >= 90)    strengths.push('Outstanding attendance record');
+  if (avgA >= 75 && avgA < 90) strengths.push('Good attendance consistency');
+  if (avgAs >= 38)   strengths.push('Excellent assignment completion rate');
+  if (d.study >= 6)  strengths.push('Dedicated daily study discipline');
+  if (trend > 5)     strengths.push('Clear upward performance trajectory');
+  if (d.activeBL === 0 && d.totalBL === 0) strengths.push('Clean academic record — no backlogs');
+  if (!strengths.length) strengths.push('Consistent effort — build on this foundation');
+
+  const improve = [];
+  if (avgM < 65)   improve.push('Marks below average — focus on core subjects');
+  if (avgA < 75)   improve.push('Attendance needs significant improvement');
+  if (d.activeBL > 0) improve.push(`${d.activeBL} active backlog(s) require urgent attention`);
+  if (d.study < 4) improve.push('Increase dedicated daily study time');
+  if (trend < -5)  improve.push('Declining trend across semesters — identify the cause');
+  if (avgAs < 25)  improve.push('Assignment completion rate is very low');
+  if (!improve.length) improve.push('Keep up the great work — minor refinements only');
+
+  const recs = [
+    `Study ${Math.ceil(recHours)}+ focused hours every day`,
+    'Maintain 95%+ attendance next semester',
+    'Complete every assignment before deadlines',
+    'Review weaker semesters to find patterns',
+    'Revise consistently rather than last-minute cramming',
+  ];
+  if (d.activeBL > 0) recs.splice(1, 0, `Clear all ${d.activeBL} backlog(s) before semester exams`);
+
+  return {
+    score, risk, recHours,
+    avgM: Math.round(avgM*10)/10,
+    avgA: Math.round(avgA*10)/10,
+    avgAs: Math.round(avgAs*10)/10,
+    trend: Math.round(trend*10)/10,
+    confLow:  Math.max(0, Math.round((score-8)*10)/10),
+    confHigh: Math.min(100, Math.round((score+8)*10)/10),
+    strengths, improve, recs,
+    breakdown: [
+      { label:'Marks',   val: Math.round(marksContrib*10)/10,  color:'#7C3AED', max:45 },
+      { label:'Attend',  val: Math.round(attendContrib*10)/10, color:'#0EA5E9', max:20 },
+      { label:'Assigns', val: Math.round(assignContrib*10)/10, color:'#F59E0B', max:15 },
+      { label:'Study',   val: Math.round(Math.min(studyContrib,21)*10)/10, color:'#A78BFA', max:21 },
+      { label:'Trend',   val: Math.round(trendContrib*10)/10,  color:'#1DBF73', max:10 },
+      { label:'Penalty', val: -Math.round(backlogPenalty*10)/10, color:'#FF5C3A', max:0 },
+    ]
+  };
+}
+
+/* ═══════════════════════════════
+   CHARTS
+═══════════════════════════════ */
+let charts = {};
+
+const CHART_DEFAULTS = {
+  responsive: true,
+  maintainAspectRatio: false,
+  plugins: { legend: { display: false } },
+  scales: {
+    x: { grid:{ color:'rgba(124,58,237,.06)' }, ticks:{ color:'#6B6B8A', font:{size:10} } },
+    y: { grid:{ color:'rgba(124,58,237,.06)' }, ticks:{ color:'#6B6B8A', font:{size:10} } }
+  }
+};
+
+function makeCharts(d, p) {
+  const labels = Array.from({length: d.n}, (_,i) => `Sem ${i+1}`);
+
+  Object.values(charts).forEach(c => { try{ c.destroy(); }catch(e){} });
+  charts = {};
+
+  charts.marks = new Chart(document.getElementById('cMarks'), {
+    type: 'line',
+    data: {
+      labels,
+      datasets: [{
+        data: d.marks,
+        borderColor: '#7C3AED',
+        backgroundColor: 'rgba(124,58,237,.08)',
+        borderWidth: 2.5,
+        pointBackgroundColor: '#7C3AED',
+        pointRadius: 5,
+        pointHoverRadius: 7,
+        tension: 0.4,
+        fill: true
+      }]
+    },
+    options: { ...CHART_DEFAULTS, scales:{...CHART_DEFAULTS.scales, y:{...CHART_DEFAULTS.scales.y, min:0, max:100}} }
+  });
+
+  charts.attend = new Chart(document.getElementById('cAttend'), {
+    type: 'line',
+    data: {
+      labels,
+      datasets: [{
+        data: d.attend,
+        borderColor: '#0EA5E9',
+        backgroundColor: 'rgba(14,165,233,.08)',
+        borderWidth: 2.5,
+        pointBackgroundColor: '#0EA5E9',
+        pointRadius: 5,
+        pointHoverRadius: 7,
+        tension: 0.4,
+        fill: true
+      }]
+    },
+    options: { ...CHART_DEFAULTS, scales:{...CHART_DEFAULTS.scales, y:{...CHART_DEFAULTS.scales.y, min:0, max:100}} }
+  });
+
+  charts.radar = new Chart(document.getElementById('cRadar'), {
+    type: 'radar',
+    data: {
+      labels: ['Marks', 'Attendance', 'Assignments', 'Study Hrs', 'Trend'],
+      datasets: [{
+        data: [
+          p.avgM,
+          p.avgA,
+          Math.round(p.avgAs / 50 * 100),
+          Math.min(100, Math.round(d.study / 14 * 100)),
+          Math.max(0, Math.min(100, 50 + p.trend))
+        ],
+        borderColor: '#7C3AED',
+        backgroundColor: 'rgba(124,58,237,.10)',
+        pointBackgroundColor: '#7C3AED',
+        borderWidth: 2,
+        pointRadius: 4
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend:{ display:false } },
+      scales: {
+        r: {
+          min: 0, max: 100,
+          grid:   { color:'rgba(124,58,237,.08)' },
+          ticks:  { display:false },
+          pointLabels: { color:'#6B6B8A', font:{ size:11 } }
+        }
+      }
+    }
+  });
+
+  charts.combo = new Chart(document.getElementById('cCombo'), {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [
+        { label:'Marks',            data: d.marks,              backgroundColor:'rgba(124,58,237,.70)', borderRadius:5, borderSkipped:false },
+        { label:'Attendance',       data: d.attend,             backgroundColor:'rgba(14,165,233,.60)', borderRadius:5, borderSkipped:false },
+        { label:'Assignments (×2)', data: d.assign.map(v=>v*2), backgroundColor:'rgba(245,158,11,.60)', borderRadius:5, borderSkipped:false },
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          display: true,
+          labels: { color:'#6B6B8A', font:{size:11}, boxWidth:12, padding:16 }
+        }
+      },
+      scales: {
+        x: { grid:{ color:'rgba(124,58,237,.05)' }, ticks:{ color:'#6B6B8A', font:{size:10} } },
+        y: { grid:{ color:'rgba(124,58,237,.05)' }, ticks:{ color:'#6B6B8A', font:{size:10} }, min:0, max:100 }
+      }
+    }
+  });
+}
+
+/* ═══════════════════════════════
+   RENDER RESULTS
+═══════════════════════════════ */
+function renderResults(d, p) {
+  let emoji='🎯', title='Prediction Ready';
+  if      (p.score >= 85){ emoji='🌟'; title='Outstanding Predicted!'; }
+  else if (p.score >= 75){ emoji='🎉'; title='Strong Performance Expected'; }
+  else if (p.score >= 60){ emoji='👍'; title='Good Result Likely'; }
+  else if (p.score >= 50){ emoji='📚'; title='Improvement Needed'; }
+  else                   { emoji='⚠️'; title='Urgent Action Required'; }
+
+  document.getElementById('rEmoji').textContent = emoji;
+  document.getElementById('rTitle').textContent = title;
+  document.getElementById('rName').textContent  = `${d.name} — Semester ${d.sem} prediction`;
+  document.getElementById('rConf').textContent  = `Confidence interval: ${p.confLow}% – ${p.confHigh}%`;
+  document.getElementById('rScore').textContent = p.score + '%';
+
+  document.getElementById('kAvgM').textContent  = p.avgM + '%';
+  document.getElementById('kAvgA').textContent  = p.avgA + '%';
+  const aTag = document.getElementById('kAvgATag');
+  aTag.textContent = p.avgA >= 75 ? '✓ Good' : '⚠ Low';
+  aTag.className   = 'kpi-tag ' + (p.avgA >= 75 ? 'tag-volt' : 'tag-coral');
+  document.getElementById('kAvgAs').textContent = p.avgAs + ' / 50';
+  const tEl  = document.getElementById('kTrend');
+  const tTag = document.getElementById('kTrendTag');
+  tEl.textContent  = (p.trend >= 0 ? '+' : '') + p.trend;
+  tTag.textContent = p.trend >= 0 ? '↑ Improving' : '↓ Declining';
+  tTag.className   = 'kpi-tag ' + (p.trend >= 0 ? 'tag-volt' : 'tag-coral');
+
+  const rCfg = {
+    low:      { cls:'risk-low',      label:'✓ Low Risk',      title:'You are on track',          desc:'Solid performance across key metrics. Stay consistent and you will exceed expectations next semester.' },
+    moderate: { cls:'risk-moderate', label:'⚡ Moderate Risk', title:'Some areas need attention', desc:'Address your weak points — improve attendance, clear any backlogs — and you will be in a good position.' },
+    high:     { cls:'risk-high',     label:'⚠ High Risk',     title:'Immediate action required', desc:'Multiple risk factors detected. Prioritise clearing backlogs, improving attendance, and seeking extra academic support now.' },
+  };
+  const rc = rCfg[p.risk];
+  document.getElementById('riskBadge').textContent = rc.label;
+  document.getElementById('riskBadge').className   = 'risk-badge ' + rc.cls;
+  document.getElementById('riskTitle').textContent = rc.title;
+  document.getElementById('riskDesc').textContent  = rc.desc;
+  document.getElementById('recHours').textContent  = p.recHours + ' hrs / day';
+
+  document.getElementById('kSemTag').textContent = `${d.n} sem${d.n > 1 ? 's' : ''}`;
+  document.getElementById('chartMTrend').textContent = `Trend: ${p.trend >= 0 ? '+':''} ${p.trend} pts (Sem1→Sem${d.n})`;
+  document.getElementById('chartAAvg').textContent   = `Average: ${p.avgA}%`;
+
+  const bEl = document.getElementById('scoreBreakdown');
+  bEl.innerHTML = p.breakdown.map(b => {
+    const pct = b.max > 0 ? Math.max(0, Math.min(100, (b.val / b.max) * 100)) : 0;
+    const valStr = b.label === 'Penalty' ? (b.val !== 0 ? b.val : '0') : '+' + b.val;
+    return `<div class="sb-row">
+      <div class="sb-label">${b.label}</div>
+      <div class="sb-track"><div class="sb-fill" style="width:${pct}%;background:${b.color}"></div></div>
+      <div class="sb-val" style="color:${b.color}">${valStr}</div>
+    </div>`;
+  }).join('');
+
+  const makeList = (arr, dotColor) =>
+    arr.map(t => `<div class="ins-item"><div class="ins-dot" style="background:${dotColor}"></div><span>${t}</span></div>`).join('');
+  document.getElementById('insStrengths').innerHTML = makeList(p.strengths, '#7C3AED');
+  document.getElementById('insImprove').innerHTML   = makeList(p.improve,   '#F59E0B');
+  document.getElementById('insRecs').innerHTML      = makeList(p.recs,      '#0EA5E9');
+
+  makeCharts(d, p);
+}
+
+/* ═══════════════════════════════
+   RUN
+═══════════════════════════════ */
+function runAnalysis() {
+  const d = collect();
+
+  if (!d.name)  { alert('Please enter your name.'); document.getElementById('f-name').focus(); return; }
+  if (!d.sid)   { alert('Please enter your Student ID.'); document.getElementById('f-sid').focus(); return; }
+  if (!d.age)   { alert('Please enter your age.'); document.getElementById('f-age').focus(); return; }
+  if (!document.getElementById('f-sem').value) { alert('Please select your current semester.'); return; }
+
+  const n = Math.max(1, d.sem - 1);
+  const missing = [...Array(n)].flatMap((_,i) => ['m','a','as'].map(p => p+(i+1)))
+    .find(id => !document.getElementById(id).value.trim());
+  if (missing) {
+    alert('Please fill in all semester marks, attendance and assignment values.');
+    document.getElementById(missing).focus();
+    return;
+  }
+
+  const p = predict(d);
+  const res = document.getElementById('results');
+  res.classList.add('show');
+  renderResults(d, p);
+  setTimeout(() => res.scrollIntoView({ behavior:'smooth', block:'start' }), 120);
+}
+
+/* ═══════════════════════════════
+   RESET
+═══════════════════════════════ */
+function resetAll() {
+  ['f-name','f-sid','f-age','f-sem'].forEach(id => { document.getElementById(id).value = ''; });
+  document.getElementById('f-tbl').value   = '0';
+  document.getElementById('f-abl').value   = '0';
+  document.getElementById('f-study').value = '4';
+  document.getElementById('studyLbl').textContent = '4 hrs';
+  document.getElementById('marks-grid').innerHTML  = '';
+  document.getElementById('attend-grid').innerHTML = '';
+  document.getElementById('assign-grid').innerHTML = '';
+  document.getElementById('marks-desc').textContent  = 'Select your current semester first';
+  document.getElementById('attend-desc').textContent = 'Select your current semester first';
+  document.getElementById('assign-desc').textContent = 'Select your current semester first';
+  document.getElementById('results').classList.remove('show');
+  Object.values(charts).forEach(c => { try{ c.destroy(); }catch(e){} });
+  charts = {};
+  updateProgress();
+  window.scrollTo({ top:0, behavior:'smooth' });
+}
+</script>
+</body>
+</html>

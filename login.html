@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EduBoard – Sign In</title>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@400;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --blue:#7C3AED;--blue-dark:#4C1D95;--blue-soft:#F5F3FF;--blue-mid:#DDD6FE;
+  --coral:#FF5C3A;--green:#1DBF73;--amber:#F59E0B;
+  --bg:#FAF8FF;--card:#FFFFFF;--text:#1E1030;--muted:#6B6B8A;--light:#A89FC0;
+  --border:#EDE9F8;--shadow:0 8px 40px rgba(124,58,237,0.13);
+  --radius:16px;--radius-sm:10px;--input-h:48px;
+}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);min-height:100vh;display:flex;align-items:stretch;overflow-x:hidden}
+/* LEFT PANEL */
+.left-panel{width:44%;background:linear-gradient(145deg,#3B0764 0%,#7C3AED 55%,#A78BFA 100%);display:flex;flex-direction:column;justify-content:space-between;padding:48px 52px;position:relative;flex-shrink:0}
+.left-panel::before{content:'';position:absolute;width:380px;height:380px;border-radius:50%;background:rgba(255,255,255,0.06);bottom:-80px;left:-80px}
+.left-panel::after{content:'';position:absolute;width:220px;height:220px;border-radius:50%;background:rgba(255,255,255,0.07);top:60px;right:-50px}
+.lp-brand{display:flex;align-items:center;gap:12px;z-index:1}
+.lp-brand-icon{width:42px;height:42px;background:rgba(255,255,255,0.2);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:20px;backdrop-filter:blur(8px)}
+.lp-brand-name{font-family:'Bricolage Grotesque',sans-serif;font-size:22px;font-weight:800;color:white;letter-spacing:-0.5px}
+.lp-body{z-index:1;animation:fadeUp .7s ease both}
+@keyframes fadeUp{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:translateY(0)}}
+.lp-eyebrow{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:2px;color:rgba(255,255,255,0.6);margin-bottom:16px}
+.lp-heading{font-family:'Bricolage Grotesque',sans-serif;font-size:38px;font-weight:800;color:white;line-height:1.15;letter-spacing:-1px;margin-bottom:20px}
+.lp-heading span{color:#D8B4FE}
+.lp-desc{font-size:15px;color:rgba(255,255,255,0.7);line-height:1.7;max-width:340px;margin-bottom:36px}
+.role-cards{display:flex;gap:12px}
+.role-card-lp{flex:1;background:rgba(255,255,255,0.12);border:1.5px solid rgba(255,255,255,0.2);border-radius:14px;padding:16px;backdrop-filter:blur(8px);transition:background .2s;cursor:default}
+.role-card-lp:hover{background:rgba(255,255,255,0.18)}
+.role-card-lp .icon{font-size:24px;margin-bottom:8px}
+.role-card-lp .rc-title{font-size:14px;font-weight:700;color:white;margin-bottom:4px}
+.role-card-lp .rc-desc{font-size:11.5px;color:rgba(255,255,255,0.6);line-height:1.5}
+.lp-footer{z-index:1;font-size:12px;color:rgba(255,255,255,0.4)}
+/* RIGHT PANEL */
+.right-panel{flex:1;display:flex;align-items:center;justify-content:center;padding:40px 32px;overflow-y:auto;min-height:100vh}
+.form-card{width:100%;max-width:420px;animation:slideIn .5s cubic-bezier(.4,0,.2,1) both}
+@keyframes slideIn{from{opacity:0;transform:translateX(20px)}to{opacity:1;transform:translateX(0)}}
+.view{display:none}.view.active{display:block}
+/* ROLE SELECT */
+.role-select-title{font-family:'Bricolage Grotesque',sans-serif;font-size:26px;font-weight:800;color:var(--text);letter-spacing:-0.5px;margin-bottom:6px}
+.role-select-sub{font-size:14px;color:var(--muted);margin-bottom:32px;line-height:1.6}
+.role-options{display:flex;flex-direction:column;gap:14px;margin-bottom:28px}
+.role-option{display:flex;align-items:center;gap:16px;padding:20px 22px;border-radius:var(--radius);border:2px solid var(--border);background:var(--card);cursor:pointer;transition:all .2s cubic-bezier(.4,0,.2,1);box-shadow:0 2px 8px rgba(0,0,0,0.04)}
+.role-option:hover{border-color:var(--blue);box-shadow:0 4px 20px rgba(124,58,237,0.15);transform:translateY(-2px)}
+.role-option.selected{border-color:var(--blue);background:var(--blue-soft)}
+.ro-icon{width:52px;height:52px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0}
+.ro-text{flex:1}.ro-title{font-size:15px;font-weight:700;color:var(--text);margin-bottom:3px}
+.ro-sub{font-size:12.5px;color:var(--muted)}
+.ro-check{width:24px;height:24px;border-radius:50%;border:2px solid var(--border);display:flex;align-items:center;justify-content:center;transition:all .2s}
+.role-option.selected .ro-check{background:var(--blue);border-color:var(--blue);color:white;font-size:12px}
+.continue-btn{width:100%;padding:14px;border:none;border-radius:var(--radius-sm);background:var(--blue);color:white;font-family:'Bricolage Grotesque',sans-serif;font-size:16px;font-weight:800;cursor:pointer;transition:all .2s;box-shadow:0 4px 16px rgba(124,58,237,0.3)}
+.continue-btn:hover{background:var(--blue-dark);transform:translateY(-1px);box-shadow:0 6px 22px rgba(124,58,237,0.38)}
+.continue-btn:disabled{background:var(--border);color:var(--muted);cursor:not-allowed;box-shadow:none;transform:none}
+/* FORM */
+.form-back{background:none;border:none;color:var(--muted);font-size:13px;font-weight:600;cursor:pointer;padding:0;margin-bottom:16px;display:flex;align-items:center;gap:5px;transition:color .2s}
+.form-back:hover{color:var(--blue)}
+.form-role-badge{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:700;padding:4px 12px;border-radius:100px;margin-bottom:14px}
+.student-color{background:#EDE9F8;color:var(--blue)}
+.teacher-color{background:#D1FAE5;color:#065F46}
+.form-title{font-family:'Bricolage Grotesque',sans-serif;font-size:24px;font-weight:800;color:var(--text);letter-spacing:-0.5px;margin-bottom:5px}
+.form-sub{font-size:13px;color:var(--muted);margin-bottom:20px}
+.tabs{display:flex;gap:0;background:var(--bg);border-radius:var(--radius-sm);padding:4px;margin-bottom:22px;border:1.5px solid var(--border)}
+.tab{flex:1;padding:8px;text-align:center;font-size:13px;font-weight:600;color:var(--muted);cursor:pointer;border-radius:8px;transition:all .18s}
+.tab.active{background:white;color:var(--blue);box-shadow:0 2px 8px rgba(0,0,0,0.08)}
+.field{margin-bottom:16px}
+.field label{display:block;font-size:12px;font-weight:700;color:var(--text);margin-bottom:6px;letter-spacing:0.2px}
+.field input,.field select{width:100%;height:var(--input-h);border:1.5px solid var(--border);border-radius:var(--radius-sm);padding:0 14px;font-family:inherit;font-size:14px;color:var(--text);background:white;outline:none;transition:border-color .2s}
+.field input:focus,.field select:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(124,58,237,0.08)}
+.field input::placeholder{color:var(--light)}
+.input-wrap{position:relative}
+.input-wrap input{padding-right:46px}
+.input-icon{position:absolute;right:14px;top:50%;transform:translateY(-50%);font-size:17px;cursor:pointer;user-select:none}
+.field-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.form-options{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px}
+.checkbox-wrap{display:flex;align-items:center;gap:7px;font-size:13px;color:var(--muted);cursor:pointer}
+.forgot-link{font-size:13px;color:var(--blue);font-weight:600;text-decoration:none}
+.forgot-link:hover{text-decoration:underline}
+.submit-btn{width:100%;padding:14px;border:none;border-radius:var(--radius-sm);font-family:'Bricolage Grotesque',sans-serif;font-size:15px;font-weight:800;cursor:pointer;transition:all .2s;margin-bottom:14px}
+.btn-blue{background:linear-gradient(135deg,var(--blue),#A855F7);color:white;box-shadow:0 4px 16px rgba(124,58,237,0.3)}
+.btn-blue:hover{transform:translateY(-1px);box-shadow:0 6px 22px rgba(124,58,237,0.4)}
+.switch-text{text-align:center;font-size:13px;color:var(--muted)}
+.switch-link{color:var(--blue);font-weight:700;cursor:pointer;text-decoration:none}
+.switch-link:hover{text-decoration:underline}
+.terms-text{font-size:11.5px;color:var(--light);text-align:center;margin-bottom:8px}
+.terms-text a{color:var(--blue);text-decoration:none}
+/* strength bar */
+.strength-bar{display:flex;gap:4px;margin-top:6px}
+.strength-seg{flex:1;height:4px;border-radius:4px;background:var(--border);transition:background .3s}
+.strength-seg.weak{background:#EF4444}
+.strength-seg.medium{background:#F59E0B}
+.strength-seg.strong{background:#1DBF73}
+.strength-label{font-size:11px;font-weight:700;margin-top:4px;transition:color .3s}
+/* error alert */
+.err-alert{background:#FEE2E2;border:1.5px solid #FCA5A5;border-radius:var(--radius-sm);padding:10px 14px;font-size:13px;color:#B91C1C;margin-bottom:14px;display:none}
+.err-alert.show{display:block}
+
+/* ── RESPONSIVE ─────────────────────────── */
+@media (max-width: 900px) {
+  .left-panel{width:38%;padding:36px 32px}
+  .lp-heading{font-size:28px}
+  .lp-desc{font-size:13px}
+}
+@media (max-width: 680px) {
+  body{flex-direction:column}
+  .left-panel{width:100%;min-height:auto;padding:32px 24px;justify-content:flex-start;gap:24px;flex-shrink:0}
+  .lp-heading{font-size:26px}
+  .lp-desc{display:none}
+  .role-cards{gap:10px}
+  .role-card-lp{padding:12px}
+  .lp-footer{display:none}
+  .right-panel{min-height:auto;padding:28px 20px;align-items:flex-start}
+  .form-card{max-width:100%}
+}
+@media (max-width: 400px) {
+  .left-panel{padding:24px 16px}
+  .right-panel{padding:20px 16px}
+  .lp-heading{font-size:22px}
+  .role-cards{flex-direction:column}
+  .field-row{grid-template-columns:1fr}
+  .continue-btn,.submit-btn{font-size:14px;padding:12px}
+}
+</style>
+</head>
+<body>
+
+<div class="left-panel">
+  <div class="lp-brand">
+    <div class="lp-brand-icon">🎓</div>
+    <div class="lp-brand-name">EduBoard</div>
+  </div>
+  <div class="lp-body">
+    <div class="lp-eyebrow">✨ Smart Learning Platform</div>
+    <h2 class="lp-heading">Learn Smarter,<br>Score <span>Higher</span></h2>
+    <p class="lp-desc">Live quizzes, analytics, and personalized insights — all in one dashboard built for students and teachers.</p>
+    <div class="role-cards">
+      <div class="role-card-lp">
+        <div class="icon">🎒</div>
+        <div class="rc-title">Students</div>
+        <div class="rc-desc">Take live quizzes & track your progress</div>
+      </div>
+      <div class="role-card-lp">
+        <div class="icon">👩‍🏫</div>
+        <div class="rc-title">Teachers</div>
+        <div class="rc-desc">Monitor analytics & manage classes</div>
+      </div>
+    </div>
+  </div>
+  <div class="lp-footer">© 2025 EduBoard · All rights reserved</div>
+</div>
+
+<div class="right-panel">
+  <div class="form-card">
+
+    <!-- VIEW 1: ROLE SELECT -->
+    <div class="view active" id="view-role">
+      <div class="role-select-title">Welcome back! 👋</div>
+      <div class="role-select-sub">Choose your role to continue</div>
+      <div class="role-options">
+        <div class="role-option" id="role-student" onclick="selectRole('student')">
+          <div class="ro-icon" style="background:#EDE9F8">🎒</div>
+          <div class="ro-text">
+            <div class="ro-title">Student</div>
+            <div class="ro-sub">Access quizzes & personal analytics</div>
+          </div>
+          <div class="ro-check" id="check-student"></div>
+        </div>
+        <div class="role-option" id="role-teacher" onclick="selectRole('teacher')">
+          <div class="ro-icon" style="background:#D1FAE5">👩‍🏫</div>
+          <div class="ro-text">
+            <div class="ro-title">Teacher</div>
+            <div class="ro-sub">Manage students & view class insights</div>
+          </div>
+          <div class="ro-check" id="check-teacher"></div>
+        </div>
+      </div>
+      <button class="continue-btn" id="continue-btn" onclick="goToForm()" disabled>Continue →</button>
+    </div>
+
+    <!-- VIEW 2: STUDENT -->
+    <div class="view" id="view-student">
+      <button class="form-back" onclick="goBack()">← Back</button>
+      <div class="form-role-badge student-color">🎒 Student Portal</div>
+      <div class="form-title" id="student-title">Welcome back!</div>
+      <div class="form-sub" id="student-sub">Sign in to your student account</div>
+      <div class="tabs">
+        <div class="tab active" id="tab-student-login" onclick="switchTab('login','student')">Sign In</div>
+        <div class="tab" id="tab-student-signup" onclick="switchTab('signup','student')">Sign Up</div>
+      </div>
+      <div class="err-alert" id="student-err"></div>
+
+      <!-- STUDENT LOGIN -->
+      <div id="student-login-form">
+        <div class="field"><label>Email Address</label>
+          <div class="input-wrap"><input type="email" id="sl-email" placeholder="aarav@school.edu"><span class="input-icon">✉️</span></div>
+        </div>
+        <div class="field"><label>Password</label>
+          <div class="input-wrap"><input type="password" id="sl-pass" placeholder="Your password"><span class="input-icon" onclick="togglePwd('sl-pass',this)">👁</span></div>
+        </div>
+        <div class="form-options">
+          <label class="checkbox-wrap"><input type="checkbox"> <span>Remember me</span></label>
+          <a href="#" class="forgot-link">Forgot password?</a>
+        </div>
+        <button class="submit-btn btn-blue" onclick="handleLogin('student')">Sign In &nbsp;→</button>
+        <div class="switch-text">New here? <span class="switch-link" onclick="switchTab('signup','student')">Create account</span></div>
+      </div>
+
+      <!-- STUDENT SIGNUP -->
+      <div id="student-signup-form" style="display:none">
+        <div class="field-row">
+          <div class="field"><label>First Name</label><input type="text" id="ss-first" placeholder="abc"></div>
+          <div class="field"><label>Last Name</label><input type="text" id="ss-last" placeholder="xyz"></div>
+        </div>
+        <div class="field"><label>Email</label>
+          <div class="input-wrap"><input type="email" id="ss-email" placeholder="abc@collage.edu"><span class="input-icon">✉️</span></div>
+        </div>
+        <div class="field-row">
+          <div class="field"><label>Semester</label>
+            <select id="ss-grade"><option value="">Select Sem</option>
+              <option>sem 1</option><option>sem 2</option><option>sem 3</option>
+              <option>sem 4</option><option>sem 5</option><option>sem 6</option>
+            </select>
+          </div>
+          <div class="field"><label>Section</label>
+            <select id="ss-section"><option value="">Select</option>
+              <option>Section A</option><option>Section B</option><option>Section C</option>
+            </select>
+          </div>
+        </div>
+        <div class="field"><label>Password</label>
+          <div class="input-wrap"><input type="password" id="ss-pass" placeholder="Min. 8 characters" oninput="checkStrength(this,'ss-strength')"><span class="input-icon" onclick="togglePwd('ss-pass',this)">👁</span></div>
+          <div class="strength-bar" id="ss-strength"><div class="strength-seg"></div><div class="strength-seg"></div><div class="strength-seg"></div><div class="strength-seg"></div></div>
+          <div class="strength-label" id="ss-strength-label"></div>
+        </div>
+        <div class="field"><label>Confirm Password</label>
+          <div class="input-wrap"><input type="password" id="ss-conf" placeholder="Re-enter password"><span class="input-icon" onclick="togglePwd('ss-conf',this)">👁</span></div>
+        </div>
+        <button class="submit-btn btn-blue" onclick="handleSignup('student')">Create Student Account 🎒</button>
+        <div class="terms-text">By signing up you agree to our <a href="#">Terms</a> &amp; <a href="#">Privacy Policy</a>.</div>
+        <div class="switch-text" style="margin-top:10px">Already have an account? <span class="switch-link" onclick="switchTab('login','student')">Sign in</span></div>
+      </div>
+    </div><!-- /view-student -->
+
+    <!-- VIEW 3: TEACHER -->
+    <div class="view" id="view-teacher">
+      <button class="form-back" onclick="goBack()">← Back</button>
+      <div class="form-role-badge teacher-color">👩‍🏫 Teacher Portal</div>
+      <div class="form-title" id="teacher-title">Welcome back!</div>
+      <div class="form-sub" id="teacher-sub">Sign in to your teacher account</div>
+      <div class="tabs">
+        <div class="tab active" id="tab-teacher-login" onclick="switchTab('login','teacher')">Sign In</div>
+        <div class="tab" id="tab-teacher-signup" onclick="switchTab('signup','teacher')">New Teacher</div>
+      </div>
+      <div class="err-alert" id="teacher-err"></div>
+
+      <!-- TEACHER LOGIN -->
+      <div id="teacher-login-form">
+        <div class="field"><label>School Email</label>
+          <div class="input-wrap"><input type="email" id="tl-email" placeholder="teacher@collage.edu"><span class="input-icon">✉️</span></div>
+        </div>
+        <div class="field"><label>Password</label>
+          <div class="input-wrap"><input type="password" id="tl-pass" placeholder="Your password"><span class="input-icon" onclick="togglePwd('tl-pass',this)">👁</span></div>
+        </div>
+        <div class="form-options">
+          <label class="checkbox-wrap"><input type="checkbox"> <span>Remember me</span></label>
+          <a href="#" class="forgot-link">Forgot password?</a>
+        </div>
+        <button class="submit-btn btn-blue" onclick="handleLogin('teacher')">Sign In &nbsp;→</button>
+        <div class="switch-text">New teacher? <span class="switch-link" onclick="switchTab('signup','teacher')">Register here</span></div>
+      </div>
+
+      <!-- TEACHER SIGNUP -->
+      <div id="teacher-signup-form" style="display:none">
+        <div class="field-row">
+          <div class="field"><label>First Name</label><input type="text" id="ts-first" placeholder="abc"></div>
+          <div class="field"><label>Last Name</label><input type="text" id="ts-last" placeholder="xyz"></div>
+        </div>
+        <div class="field"><label>collage Email</label>
+          <div class="input-wrap"><input type="email" id="ts-email" placeholder="abc@collage.edu"><span class="input-icon">✉️</span></div>
+        </div>
+        <div class="field-row">
+          <div class="field"><label>Subject</label>
+            <select id="ts-subject"><option value="">Select Course</option>
+              <option>Python</option><option>Java</option><option>R Programming</option>
+              <option>Swift</option><option>C Programming</option>
+            </select>
+          </div>
+          <div class="field"><label>Staff ID</label><input type="text" id="ts-staff" placeholder="TCH-2025"></div>
+        </div>
+        <div class="field"><label>Password</label>
+          <div class="input-wrap"><input type="password" id="ts-pass" placeholder="Min. 8 characters" oninput="checkStrength(this,'ts-strength')"><span class="input-icon" onclick="togglePwd('ts-pass',this)">👁</span></div>
+          <div class="strength-bar" id="ts-strength"><div class="strength-seg"></div><div class="strength-seg"></div><div class="strength-seg"></div><div class="strength-seg"></div></div>
+          <div class="strength-label" id="ts-strength-label"></div>
+        </div>
+        <div class="field"><label>Confirm Password</label>
+          <div class="input-wrap"><input type="password" id="ts-conf" placeholder="Re-enter password"><span class="input-icon" onclick="togglePwd('ts-conf',this)">👁</span></div>
+        </div>
+        <button class="submit-btn btn-blue" onclick="handleSignup('teacher')">Create Teacher Account 👩‍🏫</button>
+        <div class="terms-text">By signing up you agree to our <a href="#">Terms</a> &amp; <a href="#">Privacy Policy</a>.</div>
+        <div class="switch-text" style="margin-top:10px">Already registered? <span class="switch-link" onclick="switchTab('login','teacher')">Sign in</span></div>
+      </div>
+    </div><!-- /view-teacher -->
+
+  </div>
+</div>
+
+<script>
+let currentRole = null;
+
+function selectRole(role) {
+  document.querySelectorAll('.role-option').forEach(o => o.classList.remove('selected'));
+  document.querySelectorAll('.ro-check').forEach(c => c.textContent = '');
+  document.getElementById('role-' + role).classList.add('selected');
+  document.getElementById('check-' + role).textContent = '✓';
+  currentRole = role;
+  document.getElementById('continue-btn').disabled = false;
+}
+
+function goToForm() {
+  if (!currentRole) return;
+  showView('view-' + currentRole);
+  switchTab('login', currentRole);
+}
+
+function goBack() {
+  showView('view-role');
+  currentRole = null;
+}
+
+function showView(id) {
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+function switchTab(tab, role) {
+  role = role || currentRole;
+  const loginTab   = document.getElementById('tab-' + role + '-login');
+  const signupTab  = document.getElementById('tab-' + role + '-signup');
+  const loginForm  = document.getElementById(role + '-login-form');
+  const signupForm = document.getElementById(role + '-signup-form');
+  const title      = document.getElementById(role + '-title');
+  const sub        = document.getElementById(role + '-sub');
+  if (tab === 'login') {
+    loginTab.classList.add('active'); signupTab.classList.remove('active');
+    loginForm.style.display = 'block'; signupForm.style.display = 'none';
+    title.textContent = 'Welcome back!';
+    sub.textContent = 'Sign in to your ' + role + ' account';
+  } else {
+    signupTab.classList.add('active'); loginTab.classList.remove('active');
+    signupForm.style.display = 'block'; loginForm.style.display = 'none';
+    title.textContent = 'Create an account';
+    sub.textContent = 'Register as a new ' + role;
+  }
+}
+
+function showErr(role, msg) {
+  const el = document.getElementById(role + '-err');
+  el.textContent = msg; el.classList.add('show');
+  setTimeout(() => el.classList.remove('show'), 4000);
+}
+
+async function handleLogin(role) {
+  const emailId = role === 'student' ? 'sl-email' : 'tl-email';
+  const passId  = role === 'student' ? 'sl-pass'  : 'tl-pass';
+  const email   = document.getElementById(emailId).value.trim();
+  const password = document.getElementById(passId).value;
+  if (!email || !password) { showErr(role, 'Please fill in all fields.'); return; }
+  try {
+    const r = await fetch('/api/login', {
+      method: 'POST', headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({ email, password, role })
+    });
+    const d = await r.json();
+    if (d.success) { window.location.href = d.redirect; }
+    else { showErr(role, d.error || 'Login failed'); }
+  } catch(e) { showErr(role, 'Network error. Please try again.'); }
+}
+
+async function handleSignup(role) {
+  const p = role === 'student' ? {
+    first: 'ss-first', last: 'ss-last', email: 'ss-email',
+    pass: 'ss-pass', conf: 'ss-conf',
+    extra: { grade: document.getElementById('ss-grade').value, section: document.getElementById('ss-section').value }
+  } : {
+    first: 'ts-first', last: 'ts-last', email: 'ts-email',
+    pass: 'ts-pass', conf: 'ts-conf',
+    extra: { subject: document.getElementById('ts-subject').value, staff_id: document.getElementById('ts-staff').value }
+  };
+  const first    = document.getElementById(p.first).value.trim();
+  const last     = document.getElementById(p.last).value.trim();
+  const email    = document.getElementById(p.email).value.trim();
+  const password = document.getElementById(p.pass).value;
+  const confirm  = document.getElementById(p.conf).value;
+  if (!first || !last || !email || !password) { showErr(role, 'Please fill in all required fields.'); return; }
+  if (password !== confirm) { showErr(role, 'Passwords do not match.'); return; }
+  if (password.length < 8)  { showErr(role, 'Password must be at least 8 characters.'); return; }
+  try {
+    const r = await fetch('/api/signup', {
+      method: 'POST', headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({ first_name: first, last_name: last, email, password, role, ...p.extra })
+    });
+    const d = await r.json();
+    if (d.success) { window.location.href = d.redirect; }
+    else { showErr(role, d.error || 'Signup failed'); }
+  } catch(e) { showErr(role, 'Network error. Please try again.'); }
+}
+
+function togglePwd(id, btn) {
+  const inp = document.getElementById(id);
+  inp.type = inp.type === 'password' ? 'text' : 'password';
+  btn.textContent = inp.type === 'text' ? '🙈' : '👁';
+}
+
+function checkStrength(input, barId) {
+  const val = input.value; const segs = document.querySelectorAll('#' + barId + ' .strength-seg');
+  const label = document.getElementById(barId + '-label');
+  let score = 0;
+  if (val.length >= 8) score++;
+  if (/[A-Z]/.test(val)) score++;
+  if (/[0-9]/.test(val)) score++;
+  if (/[^A-Za-z0-9]/.test(val)) score++;
+  const classes = ['','weak','medium','medium','strong'];
+  const labels  = ['','Weak','Fair','Good','Strong 🔒'];
+  const colors  = {weak:'#EF4444',medium:'#F59E0B',strong:'#1DBF73'};
+  segs.forEach((s,i) => { s.className='strength-seg'; if(i<score) s.classList.add(classes[score]); });
+  label.textContent = val.length ? labels[score] : '';
+  label.style.color = colors[classes[score]] || 'var(--muted)';
+}
+</script>
+</body>
+</html>

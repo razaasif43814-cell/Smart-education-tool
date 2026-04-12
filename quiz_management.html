@@ -1,0 +1,1294 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EduBoard – Teacher Quiz Management</title>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@400;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --purple: #7C3AED;
+  --purple-dark: #4C1D95;
+  --purple-soft: #F5F3FF;
+  --purple-mid: #DDD6FE;
+  --accent-coral: #FF5C3A;
+  --accent-green: #1DBF73;
+  --accent-amber: #F59E0B;
+  --accent-blue: #3B82F6;
+  --bg: #FAF8FF;
+  --card: #FFFFFF;
+  --text: #1E1030;
+  --muted: #6B6B8A;
+  --light: #C4B8E8;
+  --border: #EDE9F8;
+  --sh-sm: 0 1px 4px rgba(124, 58, 237, 0.06);
+  --sh-md: 0 4px 20px rgba(124, 58, 237, 0.10);
+  --sh-lg: 0 8px 40px rgba(124, 58, 237, 0.14);
+  --r: 14px;
+  --rsm: 9px;
+}
+
+*, *::before, *::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body {
+  height: 100%;
+  width: 100%;
+}
+
+body {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  display: flex;
+  overflow: hidden;
+}
+
+a { text-decoration: none; color: inherit; }
+
+/* SIDEBAR */
+.sidebar {
+  width: 220px;
+  height: 100%;
+  background: var(--card);
+  border-right: 1.5px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  padding: 20px 12px;
+  flex-shrink: 0;
+  overflow-y: auto;
+  animation: slideInLeft 0.45s ease both;
+}
+
+@keyframes slideInLeft {
+  from { opacity: 0; transform: translateX(-18px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px;
+  margin-bottom: 20px;
+}
+
+.brand-icon {
+  width: 36px;
+  height: 36px;
+  background: linear-gradient(135deg, var(--purple), #A855F7);
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  box-shadow: 0 4px 14px rgba(124, 58, 237, 0.35);
+}
+
+.brand-name {
+  font-family: 'Bricolage Grotesque', sans-serif;
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--text);
+  letter-spacing: -0.5px;
+}
+
+.brand-name span {
+  color: var(--purple);
+}
+
+.nav-section {
+  margin-bottom: 20px;
+}
+
+.nav-section-label {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--light);
+  text-transform: uppercase;
+  letter-spacing: 1.2px;
+  padding: 8px 12px;
+  display: block;
+  margin-bottom: 6px;
+}
+
+.nav-link {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: var(--rsm);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--muted);
+  cursor: pointer;
+  transition: all 0.18s;
+  margin-bottom: 4px;
+  user-select: none;
+}
+
+.nav-link:hover {
+  background: var(--purple-soft);
+  color: var(--purple);
+  transform: translateX(2px);
+}
+
+.nav-link.active {
+  background: var(--purple);
+  color: white;
+  font-weight: 600;
+  box-shadow: 0 4px 16px rgba(124, 58, 237, 0.30);
+}
+
+.nav-link-icon {
+  font-size: 16px;
+}
+
+.sidebar-user {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px;
+  background: linear-gradient(135deg, var(--purple-soft), #F5F3FF);
+  border-radius: var(--rsm);
+  margin-top: auto;
+  border: 1.5px solid var(--purple-mid);
+}
+
+.su-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--purple), #A78BFA);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 800;
+  color: white;
+  flex-shrink: 0;
+}
+
+.su-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.su-name {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.su-role {
+  font-size: 10px;
+  color: var(--muted);
+}
+
+/* CONTENT */
+.content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  min-width: 0;
+  height: 100%;
+}
+
+.topbar {
+  background: var(--card);
+  border-bottom: 1.5px solid var(--border);
+  padding: 12px 28px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-shrink: 0;
+  animation: slideInDown 0.4s ease both;
+}
+
+@keyframes slideInDown {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.topbar-left {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.topbar-left h1 {
+  font-family: 'Bricolage Grotesque', sans-serif;
+  font-size: 18px;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+}
+
+.topbar-left p {
+  font-size: 11px;
+  color: var(--muted);
+}
+
+.topbar-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.action-btn {
+  padding: 8px 16px;
+  background: linear-gradient(135deg, var(--purple), #A855F7);
+  color: white;
+  border: none;
+  border-radius: var(--rsm);
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 4px 12px rgba(124, 58, 237, 0.25);
+}
+
+.action-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(124, 58, 237, 0.35);
+}
+
+.icon-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: var(--rsm);
+  background: var(--bg);
+  border: 1.5px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.icon-btn:hover {
+  border-color: var(--purple);
+  background: var(--purple-soft);
+}
+
+/* MAIN AREA */
+.main {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 20px 24px;
+  min-height: 0;
+}
+
+/* HEADER SECTION */
+.header-section {
+  background: linear-gradient(135deg, var(--purple), #A855F7);
+  border-radius: var(--r);
+  padding: 20px 24px;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-shrink: 0;
+  animation: slideUp 0.5s ease both;
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.header-left h2 {
+  font-family: 'Bricolage Grotesque', sans-serif;
+  font-size: 20px;
+  font-weight: 800;
+  margin-bottom: 6px;
+}
+
+.header-left p {
+  font-size: 13px;
+  opacity: 0.9;
+}
+
+.header-right {
+  display: flex;
+  gap: 10px;
+}
+
+.stat-pill {
+  background: rgba(255, 255, 255, 0.2);
+  border: 1.5px solid rgba(255, 255, 255, 0.3);
+  border-radius: 20px;
+  padding: 8px 16px;
+  font-size: 12px;
+  font-weight: 600;
+  backdrop-filter: blur(8px);
+}
+
+/* TOOLBAR */
+.toolbar {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  flex-wrap: wrap;
+  flex-shrink: 0;
+}
+
+.search-box {
+  display: flex;
+  align-items: center;
+  background: var(--card);
+  border: 1.5px solid var(--border);
+  border-radius: var(--rsm);
+  padding: 8px 14px;
+  flex: 1;
+  min-width: 200px;
+}
+
+.search-box input {
+  flex: 1;
+  border: none;
+  background: transparent;
+  font-size: 13px;
+  color: var(--text);
+  outline: none;
+}
+
+.search-box input::placeholder {
+  color: var(--light);
+}
+
+.filter-group {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.filter-btn {
+  padding: 7px 12px;
+  background: var(--card);
+  border: 1.5px solid var(--border);
+  border-radius: var(--rsm);
+  font-size: 12px;
+  color: var(--muted);
+  cursor: pointer;
+  transition: all 0.2s;
+  font-weight: 600;
+}
+
+.filter-btn:hover,
+.filter-btn.active {
+  border-color: var(--purple);
+  background: var(--purple-soft);
+  color: var(--purple);
+}
+
+.filter-select {
+  padding: 7px 12px;
+  border: 1.5px solid var(--border);
+  border-radius: var(--rsm);
+  background: white;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  outline: none;
+}
+
+.filter-select:hover,
+.filter-select:focus {
+  border-color: var(--purple);
+  box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.08);
+}
+
+/* QUIZ TABLE */
+.quiz-table-wrapper {
+  background: var(--card);
+  border-radius: var(--r);
+  border: 1.5px solid var(--border);
+  box-shadow: var(--sh-sm);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+}
+
+.table-header {
+  padding: 14px 20px;
+  border-bottom: 1.5px solid var(--border);
+  flex-shrink: 0;
+}
+
+.table-title {
+  font-family: 'Bricolage Grotesque', sans-serif;
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.table-scroll {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: auto;
+  min-height: 0;
+}
+
+.quiz-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.quiz-table thead {
+  background: var(--purple-soft);
+  border-bottom: 1.5px solid var(--border);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.quiz-table th {
+  padding: 12px 16px;
+  text-align: left;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+}
+
+.quiz-table tbody tr {
+  border-bottom: 1px solid var(--border);
+  transition: background 0.15s;
+}
+
+.quiz-table tbody tr:hover {
+  background: var(--purple-soft);
+}
+
+.quiz-table tbody tr:last-child {
+  border-bottom: none;
+}
+
+.quiz-table td {
+  padding: 12px 16px;
+  font-size: 12px;
+  color: var(--text);
+  white-space: nowrap;
+}
+
+.quiz-name-cell {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  white-space: normal;
+  max-width: 220px;
+}
+
+.quiz-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  background: linear-gradient(135deg, var(--purple), #A78BFA);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  flex-shrink: 0;
+}
+
+.quiz-name {
+  font-weight: 600;
+  word-break: break-word;
+}
+
+.quiz-desc {
+  font-size: 11px;
+  color: var(--light);
+  max-width: 200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.badge-active {
+  background: #DCFCE7;
+  color: var(--accent-green);
+}
+
+.badge-draft {
+  background: #FEF3C7;
+  color: var(--accent-amber);
+}
+
+.badge-pending {
+  background: #FEE2E2;
+  color: var(--accent-coral);
+}
+
+.badge-completed {
+  background: #E0F2FE;
+  color: var(--accent-blue);
+}
+
+.action-menu {
+  display: flex;
+  gap: 6px;
+}
+
+.action-icon {
+  width: 28px;
+  height: 28px;
+  border-radius: 4px;
+  background: var(--purple-soft);
+  border: 1px solid var(--purple-mid);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+  color: var(--purple);
+}
+
+.action-icon:hover {
+  background: var(--purple);
+  color: white;
+  border-color: var(--purple);
+}
+
+/* PAGINATION */
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 14px 20px;
+  border-top: 1.5px solid var(--border);
+  flex-shrink: 0;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.page-btn {
+  width: 24px;
+  height: 24px;
+  border: 1px solid var(--border);
+  background: white;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-size: 11px;
+}
+
+.page-btn:hover {
+  border-color: var(--purple);
+  background: var(--purple-soft);
+}
+
+.page-btn.active {
+  background: var(--purple);
+  color: white;
+  border-color: var(--purple);
+}
+
+/* MODAL */
+.modal {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 1000;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal.show {
+  display: flex;
+}
+
+.modal-content {
+  background: var(--card);
+  border-radius: var(--r);
+  padding: 28px;
+  max-width: 600px;
+  width: 90%;
+  box-shadow: var(--sh-lg);
+  max-height: 80vh;
+  overflow-y: auto;
+}
+
+.modal-title {
+  font-family: 'Bricolage Grotesque', sans-serif;
+  font-size: 18px;
+  font-weight: 800;
+  margin-bottom: 16px;
+  color: var(--text);
+}
+
+.modal-form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.form-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.form-field label {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text);
+  text-transform: uppercase;
+}
+
+.form-field input,
+.form-field select,
+.form-field textarea {
+  padding: 10px 14px;
+  border: 1.5px solid var(--border);
+  border-radius: var(--rsm);
+  font-family: inherit;
+  font-size: 13px;
+  color: var(--text);
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.form-field input:focus,
+.form-field select:focus,
+.form-field textarea:focus {
+  border-color: var(--purple);
+  box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.08);
+}
+
+.form-field textarea {
+  resize: vertical;
+  min-height: 100px;
+}
+
+.modal-buttons {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+  margin-top: 20px;
+}
+
+.btn-cancel {
+  padding: 10px 20px;
+  border: 1.5px solid var(--border);
+  background: white;
+  border-radius: var(--rsm);
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--muted);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-cancel:hover {
+  border-color: var(--purple);
+  color: var(--purple);
+}
+
+.btn-submit {
+  padding: 10px 20px;
+  background: linear-gradient(135deg, var(--purple), #A855F7);
+  color: white;
+  border: none;
+  border-radius: var(--rsm);
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 4px 12px rgba(124, 58, 237, 0.25);
+}
+
+.btn-submit:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(124, 58, 237, 0.35);
+}
+
+/* SCROLLBAR */
+.main::-webkit-scrollbar,
+.sidebar::-webkit-scrollbar,
+.table-scroll::-webkit-scrollbar {
+  width: 6px;
+}
+
+.main::-webkit-scrollbar-thumb,
+.sidebar::-webkit-scrollbar-thumb,
+.table-scroll::-webkit-scrollbar-thumb {
+  background: var(--purple-mid);
+  border-radius: 20px;
+}
+
+.main::-webkit-scrollbar-thumb:hover {
+  background: var(--purple);
+}
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="brand">
+    <div class="brand-icon">🎓</div>
+    <div class="brand-name">Edu<span>Board</span></div>
+  </div>
+
+  <div class="nav-section">
+    <span class="nav-section-label">Main</span>
+    <a href="/teacher-dashboard" class="nav-link">
+      <span class="nav-link-icon">🏠</span><span>Dashboard</span>
+    </a>
+    <a href="/my-subject" class="nav-link">
+      <span class="nav-link-icon">📚</span><span>My Subject</span>
+    </a>
+    <a href="/create-quiz" class="nav-link active">
+      <span class="nav-link-icon">🎯</span><span>Create Quiz</span>
+    </a>
+  </div>
+
+  <div class="nav-section">
+    <span class="nav-section-label">Support</span>
+    <a href="#" class="nav-link" onclick="openHelp(); return false;">
+      <span class="nav-link-icon">❓</span><span>Teacher Help</span>
+    </a>
+  </div>
+
+  <div class="sidebar-user">
+    <div class="su-avatar">{{ user.initials }}</div>
+    <div class="su-info">
+      <div class="su-name">{{ user.full_name }}</div>
+      <div class="su-role">Teacher</div>
+    </div>
+    <a href="/logout" style="font-size:16px;color:var(--muted);padding:4px;transition:color .2s;text-decoration:none" title="Logout">⏻</a>
+  </div>
+</aside>
+
+<!-- CONTENT -->
+<div class="content">
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <div class="topbar-left">
+      <h1>🎯 Quiz Management</h1>
+      <p>{{ now }} · {{ user.subject or "All Subjects" }}</p>
+    </div>
+    <div class="topbar-right">
+      <button class="action-btn" onclick="openCreateQuiz()">＋ Create Quiz</button>
+      <div class="icon-btn" title="Notifications">🔔</div>
+    </div>
+  </div>
+
+  <!-- MAIN AREA -->
+  <div class="main">
+    <!-- HEADER SECTION -->
+    <div class="header-section">
+      <div class="header-left">
+        <h2>Welcome Back, {{ user.first_name }}! 👋</h2>
+        <p>Manage and track quizzes taken by your students</p>
+      </div>
+      <div class="header-right">
+        <div class="stat-pill">📋 <span id="pill-active">{{ quiz_stats.active }}</span> Active</div>
+        <div class="stat-pill">👥 <span id="pill-students">{{ quiz_stats.total_students }}</span> Students</div>
+        <div class="stat-pill">✅ <span id="pill-total">{{ quiz_stats.total_attempts }}</span> Attempts</div>
+      </div>
+    </div>
+
+    <!-- TOOLBAR -->
+    <div class="toolbar">
+      <div class="search-box">
+        <input type="text" id="searchInput" placeholder="Search quiz name or subject...">
+        <span>🔍</span>
+      </div>
+      <div class="filter-group">
+        <button class="filter-btn active" onclick="filterQuizzes('all')">All</button>
+        <button class="filter-btn" onclick="filterQuizzes('active')">Active</button>
+        <button class="filter-btn" onclick="filterQuizzes('draft')">Draft</button>
+        <button class="filter-btn" onclick="filterQuizzes('completed')">Completed</button>
+      </div>
+      <select class="filter-select" id="statusFilter" onchange="filterQuizzes('status')">
+        <option value="">Status ↓</option>
+        <option value="active">Active</option>
+        <option value="inactive">Inactive</option>
+      </select>
+      <select class="filter-select" id="categoryFilter" onchange="filterQuizzes('category')">
+        <option value="">All Subjects ↓</option>
+        <option value="Mathematics">Mathematics</option>
+        <option value="Science">Science</option>
+        <option value="History">History</option>
+        <option value="Geography">Geography</option>
+        <option value="Computer Science">Computer Science</option>
+        <option value="General Knowledge">General Knowledge</option>
+        <option value="English">English</option>
+        <option value="Sports">Sports</option>
+      </select>
+    </div>
+
+    <!-- QUIZ TABLE -->
+    <div class="quiz-table-wrapper">
+      <div class="table-header" style="display:flex;align-items:center;justify-content:space-between">
+        <div class="table-title">📚 Quiz List</div>
+        <button onclick="location.reload()" style="background:var(--bg);border:1.5px solid var(--border);border-radius:8px;padding:6px 14px;font-size:12px;font-weight:600;color:var(--muted);cursor:pointer;font-family:inherit" title="Reload to see latest student attempts">↻ Refresh</button>
+      </div>
+
+      <div class="table-scroll">
+        <table class="quiz-table" id="quizTable">
+          <thead>
+            <tr>
+              <th style="width: 240px">Quiz Name</th>
+              <th style="width: 100px">Subject</th>
+              <th style="width: 120px">Created Date</th>
+              <th style="width: 100px">Status</th>
+              <th style="width: 110px">Category</th>
+              <th style="width: 120px">Avg Score / Takes</th>
+              <th style="width: 90px">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="tableBody">
+            <!-- Data will be populated by JavaScript -->
+          </tbody>
+        </table>
+      </div>
+
+      <div class="pagination">
+        <span id="pag-info">Loading...</span>
+        <div id="pag-buttons" style="display:flex;gap:4px"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- CREATE/EDIT QUIZ MODAL -->
+<div class="modal" id="quizModal">
+  <div class="modal-content">
+    <div class="modal-title" id="modalTitle">Create New Quiz</div>
+    
+    <div class="modal-form">
+      <div class="form-field">
+        <label>Quiz Name *</label>
+        <input type="text" id="quizName" placeholder="Enter quiz name">
+      </div>
+
+      <div class="form-field">
+        <label>Subject *</label>
+        <select id="quizSubject">
+          <option value="">Select subject</option>
+          <option value="R Programming">R Programming</option>
+          <option value="C Programming">C Programming</option>
+          <option value="Java">Java</option>
+          <option value="Swift">Swift</option>
+          <option value="Python">Python</option>
+        </select>
+      </div>
+
+      <div class="form-field">
+        <label>Category *</label>
+        <select id="quizCategory">
+          <option value="">Select category</option>
+          <option value="Test Exam">Test Exam</option>
+          <option value="Practice">Practice</option>
+          <option value="Assignment">Assignment</option>
+          <option value="Quiz">Quiz</option>
+        </select>
+      </div>
+
+      <div class="form-field">
+        <label>Description</label>
+        <textarea id="quizDescription" placeholder="Add quiz description..."></textarea>
+      </div>
+
+      <div class="form-field">
+        <label>Number of Questions *</label>
+        <input type="number" id="quizQuestions" min="1" max="100" placeholder="e.g., 20">
+      </div>
+
+      <div class="form-field">
+        <label>Difficulty *</label>
+        <select id="quizDifficulty">
+          <option value="Easy">🟢 Easy</option>
+          <option value="Medium" selected>🟡 Medium</option>
+          <option value="Hard">🔴 Hard</option>
+        </select>
+      </div>
+
+      <div class="form-field">
+        <label>Duration (minutes) *</label>
+        <input type="number" id="quizDuration" min="5" max="180" placeholder="e.g., 60">
+      </div>
+
+      <div class="form-field">
+        <label>Status</label>
+        <select id="quizStatus">
+          <option value="draft">Draft</option>
+          <option value="active">Active</option>
+          <option value="inactive">Inactive</option>
+        </select>
+      </div>
+
+      <div class="modal-buttons">
+        <button class="btn-cancel" onclick="closeModal()">Cancel</button>
+        <button class="btn-submit" onclick="saveQuiz()">Create Quiz</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── Live quiz attempt data from Flask ──
+const quizzes = {{ quizzes_json | safe }};
+let filteredQuizzes = [...quizzes];
+let currentPage = 1;
+const PAGE_SIZE = 8;
+
+const SUBJECT_EMOJI = {
+  'Mathematics':'🔢','Science':'🔬','History':'🏛️','Geography':'🌍',
+  'Computer Science':'💻','General Knowledge':'🧠','English':'📖','Sports':'⚽'
+};
+const SUBJECT_COLOR = {
+  'Mathematics':'#7C3AED','Science':'#059669','History':'#D97706','Geography':'#DC2626',
+  'Computer Science':'#0EA5E9','General Knowledge':'#EC4899','English':'#8B5CF6','Sports':'#10B981'
+};
+
+function renderTable() {
+  const tbody = document.getElementById('tableBody');
+  const start = (currentPage - 1) * PAGE_SIZE;
+  const page  = filteredQuizzes.slice(start, start + PAGE_SIZE);
+
+  if (filteredQuizzes.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:48px;color:var(--muted)">
+      <div style="font-size:32px;margin-bottom:8px">🎯</div>
+      No quizzes found. Students will appear here once they take quizzes.
+    </td></tr>`;
+    updatePagination();
+    return;
+  }
+
+  tbody.innerHTML = page.map(q => {
+    const emoji = SUBJECT_EMOJI[q.subject] || '📚';
+    const color = SUBJECT_COLOR[q.subject] || 'var(--purple)';
+    const scoreColor = q.avg_score >= 80 ? '#059669' : q.avg_score >= 60 ? '#D97706' : '#DC2626';
+    const badgeCls   = q.status === 'Active' ? 'badge-active' : q.status === 'Completed' ? 'badge-completed' : 'badge-draft';
+    return `<tr onclick="viewQuizDetails('${q.name}', ${q.id || 0})" style="cursor:pointer">
+      <td>
+        <div class="quiz-name-cell">
+          <div class="quiz-avatar" style="background:linear-gradient(135deg,${color},${color}99);font-size:18px">${emoji}</div>
+          <div>
+            <div class="quiz-name">${q.name}</div>
+            <div class="quiz-desc">${q.description || q.subject + ' · ' + q.difficulty}</div>
+          </div>
+        </div>
+      </td>
+      <td><span style="font-weight:600">${emoji} ${q.subject}</span></td>
+      <td style="color:var(--muted)">${q.createdDate}</td>
+      <td><span class="badge ${badgeCls}">${q.status}</span></td>
+      <td><span style="font-weight:600">${q.category}</span></td>
+      <td>
+        <div style="display:flex;align-items:center;gap:6px">
+          <span style="font-weight:700;color:${scoreColor};font-size:13px">${q.avg_score}%</span>
+          <span style="font-size:10px;color:var(--muted)">${q.students} taken</span>
+        </div>
+      </td>
+      <td>
+        <div class="action-menu">
+          <div class="action-icon" onclick="event.stopPropagation();viewQuizDetails('${q.name}', ${q.id || 0})" title="View Details">👁️</div>
+          <div class="action-icon" onclick="event.stopPropagation();deleteQuiz('${q.name}')" title="Delete">🗑️</div>
+        </div>
+      </td>
+    </tr>`;
+  }).join('');
+
+  updatePagination();
+}
+
+function updatePagination() {
+  const total = filteredQuizzes.length;
+  const pages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+  const start = Math.min((currentPage - 1) * PAGE_SIZE + 1, total);
+  const end   = Math.min(currentPage * PAGE_SIZE, total);
+  document.getElementById('pag-info').textContent = total ? `Showing ${start}–${end} of ${total}` : 'No records';
+  const pag = document.getElementById('pag-buttons');
+  let html = `<button class="page-btn" onclick="goPage(${currentPage-1})" ${currentPage===1?'disabled':''}>◀</button>`;
+  for (let i = 1; i <= pages; i++) {
+    html += `<button class="page-btn ${i===currentPage?'active':''}" onclick="goPage(${i})">${i}</button>`;
+  }
+  html += `<button class="page-btn" onclick="goPage(${currentPage+1})" ${currentPage===pages?'disabled':''}>▶</button>`;
+  pag.innerHTML = html;
+}
+
+function goPage(p) {
+  const pages = Math.ceil(filteredQuizzes.length / PAGE_SIZE);
+  if (p < 1 || p > pages) return;
+  currentPage = p;
+  renderTable();
+}
+
+function getBadgeClass(status) {
+  return {Active:'badge-active',Pending:'badge-draft',Completed:'badge-completed',Draft:'badge-draft'}[status] || 'badge-draft';
+}
+
+function filterQuizzes(filter) {
+  const q = document.getElementById('searchInput').value.toLowerCase();
+  const status   = document.getElementById('statusFilter').value.toLowerCase();
+  const category = document.getElementById('categoryFilter').value.toLowerCase();
+
+  // Update active filter button
+  if (['all','active','draft','completed'].includes(filter)) {
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    event.target.classList.add('active');
+  }
+
+  filteredQuizzes = quizzes.filter(quiz => {
+    const matchQ = !q || quiz.name.toLowerCase().includes(q) || quiz.subject.toLowerCase().includes(q);
+    const matchStatus   = !status   || quiz.status.toLowerCase() === status;
+    const matchCategory = !category || quiz.subject.toLowerCase().includes(category) || quiz.category.toLowerCase().includes(category);
+
+    if (filter === 'active')    return matchQ && quiz.status === 'Active';
+    if (filter === 'draft')     return matchQ && (quiz.status === 'Draft' || quiz.status === 'Pending');
+    if (filter === 'completed') return matchQ && quiz.status === 'Completed';
+    return matchQ && matchStatus && matchCategory;
+  });
+
+  currentPage = 1;
+  renderTable();
+}
+
+function openCreateQuiz() {
+  document.getElementById('modalTitle').textContent = '🎯 Create New Quiz';
+  document.getElementById('quizModal').classList.add('show');
+  setTimeout(() => document.getElementById('quizName').focus(), 100);
+}
+
+function closeModal() {
+  document.getElementById('quizModal').classList.remove('show');
+  document.getElementById('modalTitle').textContent = '🎯 Create New Quiz';
+  document.querySelector('.modal-form').reset();
+}
+
+async function saveQuiz() {
+  const name        = document.getElementById('quizName').value.trim();
+  const subject     = document.getElementById('quizSubject').value;
+  const category    = document.getElementById('quizCategory').value;
+  const description = document.getElementById('quizDescription').value.trim();
+  const questions   = parseInt(document.getElementById('quizQuestions').value) || 0;
+  const duration    = parseInt(document.getElementById('quizDuration').value) || 0;
+  const difficulty  = document.getElementById('quizDifficulty').value;
+  const status      = document.getElementById('quizStatus').value;
+
+  if (!name || !subject || !category) {
+    showToast('Please fill in all required fields ⚠️', 'warn'); return;
+  }
+  if (questions < 1 || questions > 100) {
+    showToast('Questions must be between 1 and 100', 'warn'); return;
+  }
+  if (duration < 5) {
+    showToast('Duration must be at least 5 minutes', 'warn'); return;
+  }
+
+  try {
+    const r = await fetch('/api/teacher-quiz', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({ name, subject, category, description, questions, duration, difficulty, status })
+    });
+    const d = await r.json();
+    if (!d.success) { showToast(d.error || 'Failed to save quiz', 'error'); return; }
+
+    // Add to local list immediately with real DB id and 0 stats (will update on reload)
+    const newQuiz = {
+      id: d.id, name, subject, category, description,
+      questions, duration, difficulty,
+      students: 0, avg_score: 0,
+      status: status === 'active' ? 'Active' : 'Draft',
+      createdDate: new Date().toLocaleDateString('en-US', {month:'short', day:'numeric', year:'numeric'}),
+    };
+    quizzes.unshift(newQuiz);
+    filteredQuizzes = [...quizzes];
+    currentPage = 1;
+    renderTable();
+    closeModal();
+    showToast('Quiz "' + name + '" created! Students can see it now 🎉', 'success');
+    document.getElementById('pill-active').textContent = quizzes.filter(q=>q.status==='Active').length;
+    document.getElementById('pill-total').textContent  = quizzes.length;
+    document.getElementById('pill-students').textContent = quizzes.reduce((s,q)=>s+q.students,0);
+  } catch(e) {
+    showToast('Network error — quiz not saved', 'error');
+  }
+}
+
+function viewQuizDetails(name, id) {
+  const quiz = quizzes.find(q => q.name === name);
+  if (!quiz) return;
+  const scoreColor = quiz.avg_score >= 80 ? '#059669' : quiz.avg_score >= 60 ? '#D97706' : '#DC2626';
+  const emoji = SUBJECT_EMOJI[quiz.subject] || '📚';
+  document.getElementById('detail-modal-body').innerHTML = `
+    <div style="display:flex;align-items:center;gap:16px;margin-bottom:20px;padding:20px;background:linear-gradient(135deg,var(--purple),#A855F7);border-radius:12px;color:white">
+      <div style="font-size:40px">${emoji}</div>
+      <div>
+        <div style="font-family:'Bricolage Grotesque',sans-serif;font-size:20px;font-weight:800">${quiz.name}</div>
+        <div style="opacity:.85;font-size:13px;margin-top:2px">${quiz.subject} · ${quiz.category} · ${quiz.difficulty || 'Medium'}</div>
+      </div>
+      <span style="margin-left:auto;background:rgba(255,255,255,.2);padding:4px 12px;border-radius:20px;font-size:12px;font-weight:700">${quiz.status}</span>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:18px">
+      <div style="background:var(--bg);border:1.5px solid var(--border);border-radius:10px;padding:14px;text-align:center">
+        <div style="font-family:'Bricolage Grotesque',sans-serif;font-size:24px;font-weight:800;color:${scoreColor}">${quiz.avg_score}%</div>
+        <div style="font-size:11px;color:var(--muted);margin-top:3px">Avg Score</div>
+      </div>
+      <div style="background:var(--bg);border:1.5px solid var(--border);border-radius:10px;padding:14px;text-align:center">
+        <div style="font-family:'Bricolage Grotesque',sans-serif;font-size:24px;font-weight:800;color:var(--purple)">${quiz.students}</div>
+        <div style="font-size:11px;color:var(--muted);margin-top:3px">Attempts</div>
+      </div>
+      <div style="background:var(--bg);border:1.5px solid var(--border);border-radius:10px;padding:14px;text-align:center">
+        <div style="font-family:'Bricolage Grotesque',sans-serif;font-size:24px;font-weight:800;color:var(--text)">${quiz.questions}</div>
+        <div style="font-size:11px;color:var(--muted);margin-top:3px">Questions</div>
+      </div>
+    </div>
+    <div style="background:var(--bg);border:1.5px solid var(--border);border-radius:10px;padding:16px;margin-bottom:14px">
+      <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);margin-bottom:8px">Details</div>
+      <div style="display:flex;flex-direction:column;gap:8px;font-size:13px">
+        <div style="display:flex;justify-content:space-between"><span style="color:var(--muted)">Duration</span><span style="font-weight:600">${quiz.duration} minutes</span></div>
+        <div style="display:flex;justify-content:space-between"><span style="color:var(--muted)">Created</span><span style="font-weight:600">${quiz.createdDate}</span></div>
+        ${quiz.description ? '<div style="display:flex;justify-content:space-between"><span style="color:var(--muted)">Description</span><span style="font-weight:600;max-width:200px;text-align:right">'+quiz.description+'</span></div>' : ''}
+      </div>
+    </div>
+  `;
+  document.getElementById('detail-modal').classList.add('show');
+}
+
+function closeDetailModal() {
+  document.getElementById('detail-modal').classList.remove('show');
+}
+
+async function deleteQuiz(name) {
+  if (!confirm('Delete "' + name + '"? This cannot be undone.')) return;
+  const quiz = quizzes.find(q => q.name === name);
+  if (!quiz) return;
+
+  // Call DELETE API if quiz has a real DB id
+  if (quiz.id && quiz.id < 2000000000) {
+    try {
+      const r = await fetch('/api/teacher-quiz/' + quiz.id, { method: 'DELETE' });
+      const d = await r.json();
+      if (!d.success) { showToast('Could not delete: ' + (d.error||'unknown error'), 'error'); return; }
+    } catch(e) {
+      showToast('Network error', 'error'); return;
+    }
+  }
+  const idx = quizzes.findIndex(q => q.name === name);
+  if (idx > -1) {
+    quizzes.splice(idx, 1);
+    filteredQuizzes = [...quizzes];
+    currentPage = 1;
+    renderTable();
+    showToast('Quiz deleted.', 'info');
+    document.getElementById('pill-active').textContent = quizzes.filter(q=>q.status==='Active').length;
+    document.getElementById('pill-total').textContent  = quizzes.length;
+  }
+}
+
+function showToast(msg, type) {
+  const t = document.getElementById('toast');
+  const colors = { success:'#059669', warn:'#D97706', info:'#3B82F6', error:'#DC2626' };
+  t.textContent = msg;
+  t.style.background = colors[type] || colors.info;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+function openHelp() {
+  document.getElementById('help-modal').style.display = 'flex';
+}
+function closeHelp() {
+  document.getElementById('help-modal').style.display = 'none';
+}
+
+document.getElementById('searchInput').addEventListener('input', function() {
+  filterQuizzes('search');
+});
+document.getElementById('quizModal').addEventListener('click', function(e) {
+  if (e.target === this) closeModal();
+});
+document.getElementById('detail-modal').addEventListener('click', function(e) {
+  if (e.target === this) closeDetailModal();
+});
+
+renderTable();
+</script>
+
+<!-- DETAIL MODAL -->
+<div class="modal" id="detail-modal" style="z-index:1001">
+  <div class="modal-content" style="max-width:520px">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+      <div class="modal-title" style="margin:0">📊 Quiz Details</div>
+      <button class="btn-cancel" onclick="closeDetailModal()" style="padding:6px 14px">✕ Close</button>
+    </div>
+    <div id="detail-modal-body"></div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div id="toast" style="position:fixed;bottom:24px;right:24px;padding:12px 20px;border-radius:10px;color:white;font-size:13px;font-weight:600;z-index:9999;opacity:0;transform:translateY(8px);transition:all .3s;pointer-events:none">
+</div>
+<style>#toast.show{opacity:1;transform:translateY(0)}</style>
+
+<!-- HELP MODAL -->
+<div id="help-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:9999;align-items:center;justify-content:center">
+  <div style="background:#fff;border-radius:16px;padding:32px;max-width:460px;width:90%;box-shadow:0 20px 60px rgba(124,58,237,.2);position:relative">
+    <button onclick="closeHelp()" style="position:absolute;top:16px;right:16px;background:var(--purple-soft);border:none;border-radius:8px;width:32px;height:32px;font-size:16px;cursor:pointer;color:var(--purple)">✕</button>
+    <div style="font-family:'Bricolage Grotesque',sans-serif;font-size:20px;font-weight:800;margin-bottom:4px">❓ Teacher Help</div>
+    <div style="font-size:12px;color:var(--muted);margin-bottom:20px">Quiz Management guide</div>
+    <div style="display:flex;flex-direction:column;gap:12px">
+      <div style="background:var(--purple-soft);border-radius:10px;padding:14px">
+        <div style="font-weight:700;font-size:13px;margin-bottom:4px">➕ Create Quiz</div>
+        <div style="font-size:12px;color:var(--muted)">Click "Create Quiz" in the topbar. Fill in the name, subject, category, difficulty, number of questions and duration.</div>
+      </div>
+      <div style="background:var(--purple-soft);border-radius:10px;padding:14px">
+        <div style="font-weight:700;font-size:13px;margin-bottom:4px">📊 Avg Score</div>
+        <div style="font-size:12px;color:var(--muted)">The table shows the average score of all students who took each quiz, and how many times it was taken.</div>
+      </div>
+      <div style="background:var(--purple-soft);border-radius:10px;padding:14px">
+        <div style="font-weight:700;font-size:13px;margin-bottom:4px">🔍 Filter & Search</div>
+        <div style="font-size:12px;color:var(--muted)">Use the search bar to find by name or subject. Use filter buttons for Active/Draft/Completed. Use the dropdowns for status or subject.</div>
+      </div>
+      <div style="background:var(--purple-soft);border-radius:10px;padding:14px">
+        <div style="font-weight:700;font-size:13px;margin-bottom:4px">👁️ View Details</div>
+        <div style="font-size:12px;color:var(--muted)">Click any row or the eye icon to see full quiz details including score breakdown and attempt count.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

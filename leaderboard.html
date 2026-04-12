@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EduBoard – Leaderboard</title>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Bricolage+Grotesque:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --purple: #7C3AED; --purple-dark: #4C1D95; --purple-soft: #F5F3FF;
+      --purple-mid: #DDD6FE; --purple-light: #EDE9F8;
+      --accent-coral: #FF5C3A; --accent-green: #1DBF73;
+      --accent-amber: #F59E0B; --accent-blue: #3B82F6;
+      --bg: #FAF8FF; --card: #FFFFFF; --text: #1E1030;
+      --muted: #6B6B8A; --light: #C4B8E8; --border: #EDE9F8;
+      --sh-sm: 0 1px 4px rgba(124,58,237,.06);
+      --sh-md: 0 4px 20px rgba(124,58,237,.10);
+      --sh-lg: 0 8px 40px rgba(124,58,237,.18);
+      --r: 14px; --rsm: 9px;
+    }
+    *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+
+    /* ── ROOT: sidebar fixed, page scrolls normally ── */
+    html, body { height:100%; }
+    body {
+      font-family:'Plus Jakarta Sans',sans-serif;
+      background:var(--bg); color:var(--text);
+      /* NO overflow:hidden — this was the bug */
+    }
+    a { text-decoration:none; color:inherit; }
+
+    /* ── SIDEBAR ── */
+    .sidebar {
+      position:fixed; top:0; left:0;
+      width:218px; height:100%;
+      background:var(--card); border-right:1.5px solid var(--border);
+      display:flex; flex-direction:column;
+      padding:28px 16px 24px; overflow-y:auto; z-index:300;
+      transition:transform .28s cubic-bezier(.4,0,.2,1);
+    }
+    @media(max-width:768px) {
+      .sidebar { transform:translateX(-100%); box-shadow:var(--sh-lg); }
+      .sidebar.open { transform:translateX(0); }
+    }
+
+    .brand { display:flex; align-items:center; gap:10px; padding:0 6px 28px; }
+    .brand-icon {
+      width:34px; height:34px; background:var(--purple); border-radius:10px;
+      display:flex; align-items:center; justify-content:center;
+      box-shadow:0 4px 14px rgba(124,58,237,.35); font-size:18px;
+    }
+    .brand-name { font-family:'Bricolage Grotesque',sans-serif; font-size:17px; font-weight:800; letter-spacing:-.5px; }
+    .brand-name span { color:var(--purple); }
+
+    .nav-group { margin-bottom:6px; }
+    .nav-group-label {
+      font-size:10px; font-weight:700; color:var(--light);
+      text-transform:uppercase; letter-spacing:1.2px; padding:0 8px 8px; display:block;
+    }
+    .nav-item {
+      display:flex; align-items:center; gap:11px; padding:10px 12px;
+      border-radius:var(--rsm); font-size:13.5px; font-weight:500; color:var(--muted);
+      cursor:pointer; transition:all .18s; margin-bottom:2px; user-select:none;
+    }
+    .nav-item:hover { background:var(--purple-soft); color:var(--purple); transform:translateX(2px); }
+    .nav-item.active { background:var(--purple); color:#fff; font-weight:600; box-shadow:0 4px 16px rgba(124,58,237,.30); }
+    .nav-item.active:hover { transform:none; }
+
+    .sidebar-user {
+      display:flex; align-items:center; gap:10px;
+      padding:12px; background:var(--purple-soft); border-radius:var(--rsm); margin-top:auto;
+    }
+    .su-avatar {
+      width:32px; height:32px; border-radius:50%;
+      background:linear-gradient(135deg,var(--purple),#A78BFA);
+      display:flex; align-items:center; justify-content:center;
+      font-size:12px; font-weight:800; color:#fff; flex-shrink:0;
+    }
+    .su-info { flex:1; min-width:0; }
+    .su-name { font-size:13px; font-weight:700; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .su-role { font-size:11px; color:var(--muted); }
+    .su-logout { font-size:16px; cursor:pointer; color:var(--muted); transition:color .2s; padding:4px; }
+    .su-logout:hover { color:var(--accent-coral); }
+    .sidebar::-webkit-scrollbar { width:4px; }
+    .sidebar::-webkit-scrollbar-thumb { background:var(--purple-mid); border-radius:20px; }
+
+    /* ── MOBILE OVERLAY ── */
+    .overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,.45); z-index:200; }
+    .overlay.show { display:block; }
+
+    /* ── PAGE WRAPPER shifts right of sidebar on desktop ── */
+    .page-wrap { margin-left:218px; display:flex; flex-direction:column; min-height:100vh; }
+    @media(max-width:768px) { .page-wrap { margin-left:0; } }
+
+    /* ── TOPBAR: sticky so it stays on scroll ── */
+    .topbar {
+      position:sticky; top:0; z-index:100;
+      background:var(--card); border-bottom:1.5px solid var(--border);
+      padding:14px 24px; display:flex; align-items:center; gap:12px; flex-shrink:0;
+    }
+
+    .hamburger {
+      display:none; background:none; border:none;
+      font-size:22px; cursor:pointer; color:var(--text);
+      padding:2px 6px; border-radius:6px; line-height:1; flex-shrink:0;
+    }
+    @media(max-width:768px) { .hamburger { display:block; } }
+
+    .topbar-left { flex:1; min-width:0; }
+    .topbar-left h1 {
+      font-family:'Bricolage Grotesque',sans-serif; font-size:19px; font-weight:800; letter-spacing:-.5px;
+      white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+    }
+    .topbar-left p { font-size:12px; color:var(--muted); margin-top:1px; }
+    .topbar-right { display:flex; align-items:center; gap:8px; flex-shrink:0; flex-wrap:wrap; }
+
+    .filter-btn {
+      background:var(--bg); border:1.5px solid var(--border); border-radius:var(--rsm);
+      padding:7px 12px; font-size:13px; color:var(--muted); cursor:pointer;
+      transition:all .2s; font-family:inherit; font-weight:600;
+    }
+    .filter-btn:hover { border-color:var(--purple); color:var(--purple); background:var(--purple-soft); }
+
+    /* ── MAIN AREA ── */
+    .main { flex:1; padding:22px 24px; display:flex; flex-direction:column; gap:18px; }
+
+    /* ── STATS GRID ── */
+    .stats-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:14px; }
+    @media(max-width:900px) { .stats-grid { grid-template-columns:repeat(2,1fr); } }
+    @media(max-width:480px)  { .stats-grid { gap:10px; } }
+
+    .stat-card {
+      background:var(--card); border-radius:var(--r); border:1.5px solid var(--border);
+      box-shadow:var(--sh-sm); padding:18px 16px 16px;
+      display:flex; flex-direction:column; gap:10px; transition:all .2s;
+    }
+    .stat-card:hover { box-shadow:var(--sh-md); transform:translateY(-2px); }
+    .stat-card-top { display:flex; align-items:flex-start; justify-content:space-between; }
+    .stat-icon { width:40px; height:40px; border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:18px; }
+    .icon-purple { background:var(--purple-soft); } .icon-green { background:#DCFCE7; }
+    .icon-amber  { background:#FEF3C7; }            .icon-blue  { background:#E0F2FE; }
+    .stat-badge { font-size:10px; font-weight:700; padding:2px 8px; border-radius:20px; background:var(--purple-soft); color:var(--purple); }
+    .stat-val { font-family:'Bricolage Grotesque',sans-serif; font-size:28px; font-weight:800; letter-spacing:-1px; }
+    .stat-label { font-size:11px; font-weight:600; color:var(--muted); text-transform:uppercase; letter-spacing:.6px; }
+
+    /* ── LEADERBOARD CARD ── */
+    .leaderboard-card {
+      background:var(--card); border-radius:var(--r); border:1.5px solid var(--border);
+      box-shadow:var(--sh-sm); padding:24px;
+    }
+    .card-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:20px; flex-wrap:wrap; gap:12px; }
+    .card-title { font-family:'Bricolage Grotesque',sans-serif; font-size:18px; font-weight:700; }
+    .sort-buttons { display:flex; gap:8px; flex-wrap:wrap; }
+    .sort-btn {
+      padding:6px 14px; border:1.5px solid var(--border); background:#fff; border-radius:var(--rsm);
+      font-size:12px; font-weight:600; color:var(--muted); cursor:pointer; transition:all .2s; font-family:inherit;
+    }
+    .sort-btn:hover { border-color:var(--purple); color:var(--purple); background:var(--purple-soft); }
+    .sort-btn.active { background:var(--purple); color:#fff; border-color:var(--purple); }
+
+    /* ── KEY FIX: horizontal scroll wrapper ── */
+    .table-wrap {
+      overflow-x:auto;
+      -webkit-overflow-scrolling:touch; /* smooth on iOS */
+    }
+    .table-wrap::-webkit-scrollbar { height:5px; }
+    .table-wrap::-webkit-scrollbar-thumb { background:var(--purple-mid); border-radius:20px; }
+
+    .leaderboard-table {
+      width:100%; border-collapse:collapse;
+      min-width:580px; /* triggers scroll before layout breaks */
+    }
+    .leaderboard-table thead { background:var(--purple-soft); border-bottom:2px solid var(--border); }
+    .leaderboard-table th {
+      padding:12px 16px; text-align:left; font-size:11px; font-weight:700;
+      color:var(--muted); text-transform:uppercase; letter-spacing:.6px; white-space:nowrap;
+    }
+    .leaderboard-table th:first-child { border-radius:10px 0 0 0; }
+    .leaderboard-table th:last-child  { border-radius:0 10px 0 0; }
+    .leaderboard-table tbody tr { border-bottom:1px solid var(--border); transition:background .15s; }
+    .leaderboard-table tbody tr:hover { background:var(--purple-soft); }
+    .leaderboard-table tbody tr:last-child { border-bottom:none; }
+    .leaderboard-table td { padding:13px 16px; font-size:13px; color:var(--text); white-space:nowrap; }
+
+    .rank-cell { display:flex; align-items:center; }
+    .rank-badge {
+      min-width:44px; height:28px; border-radius:7px; padding:0 6px;
+      background:var(--purple-soft); color:var(--purple);
+      font-size:12px; font-weight:800;
+      display:flex; align-items:center; justify-content:center; gap:3px;
+    }
+    .rank-badge.gold   { background:#FEF9C3; color:#CA8A04; }
+    .rank-badge.silver { background:#F1F5F9; color:#64748B; }
+    .rank-badge.bronze { background:#FEF3C7; color:#B45309; }
+
+    .user-cell { display:flex; align-items:center; gap:10px; }
+    .user-avatar { width:36px; height:36px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:800; color:#fff; flex-shrink:0; }
+    .user-name   { font-weight:600; font-size:13px; }
+    .user-sub    { font-size:11px; color:var(--muted); }
+
+    .score-cell { font-weight:700; color:var(--purple); font-family:'Bricolage Grotesque',sans-serif; font-size:14px; }
+
+    .prog-wrap { display:flex; align-items:center; gap:8px; }
+    .prog-bg   { flex:1; min-width:60px; height:6px; border-radius:3px; background:var(--border); overflow:hidden; }
+    .prog-fill { height:100%; border-radius:3px; background:linear-gradient(90deg,var(--purple),#A78BFA); }
+    .prog-lbl  { font-size:11px; color:var(--muted); min-width:30px; }
+
+    /* ── RESPONSIVE TWEAKS ── */
+    @media(max-width:768px) {
+      .topbar { padding:12px 16px; }
+      .topbar-left p { display:none; }
+      .main { padding:16px; gap:14px; }
+      .stat-val { font-size:22px; }
+      .leaderboard-card { padding:16px; }
+      .card-title { font-size:15px; }
+    }
+    @media(max-width:480px) {
+      .topbar-left h1 { font-size:15px; }
+      .stat-val { font-size:20px; }
+      .stat-badge { display:none; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="overlay" id="overlay" onclick="closeSidebar()"></div>
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar" id="sidebar">
+    <div class="brand">
+      <div class="brand-icon">🎓</div>
+      <div class="brand-name">Edu<span>Board</span></div>
+    </div>
+    <div class="nav-group">
+      <span class="nav-group-label">Main</span>
+      <a href="/dashboard"       class="nav-item"><span>🏠</span> Dashboard</a>
+      <a href="/quiz"            class="nav-item"><span>📝</span> Take Quiz</a>
+      <a href="/analytics"       class="nav-item"><span>📊</span> Analytics</a>
+      <a href="/leaderboard"     class="nav-item active"><span>🏆</span> Leaderboard</a>
+    </div>
+    <div class="nav-group">
+      <span class="nav-group-label">Tools</span>
+      <a href="/marks-analyzer"  class="nav-item"><span>📋</span> Marks Analyzer</a>
+      <a href="/health"          class="nav-item"><span>💚</span> Health</a>
+    </div>
+    <div class="sidebar-user">
+      <div class="su-avatar">{{ user.initials }}</div>
+      <div class="su-info">
+        <div class="su-name">{{ user.first_name }}</div>
+        <div class="su-role">{{ user.role|capitalize }}</div>
+      </div>
+      <a href="/logout" class="su-logout">🚪</a>
+    </div>
+  </aside>
+
+  <!-- PAGE -->
+  <div class="page-wrap">
+    <div class="topbar">
+      <button class="hamburger" onclick="openSidebar()" aria-label="Menu">☰</button>
+      <div class="topbar-left">
+        <h1>🏆 Leaderboard</h1>
+        <p>Top performers across all subjects</p>
+      </div>
+      <div class="topbar-right">
+        <select class="filter-btn" id="subject-filter">
+          <option value="">All Subjects</option>
+          <option>Mathematics</option><option>Science</option><option>History</option>
+          <option>Geography</option><option>Computer Science</option>
+          <option>General Knowledge</option><option>English</option><option>Sports</option>
+        </select>
+        <select class="filter-btn" id="time-filter">
+          <option value="all">All Time</option><option value="month">This Month</option>
+          <option value="week">This Week</option><option value="day">Today</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="main">
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-card-top"><div class="stat-icon icon-purple">🥇</div><span class="stat-badge">Top</span></div>
+          <div class="stat-val" id="stat-top">—</div><div class="stat-label">Highest Score</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-card-top"><div class="stat-icon icon-green">👥</div><span class="stat-badge">Active</span></div>
+          <div class="stat-val" id="stat-participants">—</div><div class="stat-label">Total Participants</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-card-top"><div class="stat-icon icon-amber">📈</div><span class="stat-badge">Total</span></div>
+          <div class="stat-val" id="stat-total">—</div><div class="stat-label">Total Quizzes</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-card-top"><div class="stat-icon icon-blue">🎯</div><span class="stat-badge">Avg</span></div>
+          <div class="stat-val" id="stat-avg">—</div><div class="stat-label">Average Score</div>
+        </div>
+      </div>
+
+      <div class="leaderboard-card">
+        <div class="card-header">
+          <div class="card-title">🏆 Top Learners</div>
+          <div class="sort-buttons">
+            <button class="sort-btn active" data-sort="score">Score</button>
+            <button class="sort-btn" data-sort="attempts">Attempts</button>
+            <button class="sort-btn" data-sort="recent">Recent</button>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table class="leaderboard-table">
+            <thead>
+              <tr>
+                <th style="width:60px">Rank</th>
+                <th style="width:210px">Student</th>
+                <th style="width:130px">Subject</th>
+                <th style="width:80px">Score</th>
+                <th style="width:90px">Attempts</th>
+                <th style="width:160px">Progress</th>
+              </tr>
+            </thead>
+            <tbody id="leaderboard-body"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const GRADS = [
+      'linear-gradient(135deg,#7C3AED,#A78BFA)',
+      'linear-gradient(135deg,#1DBF73,#6EE7B7)',
+      'linear-gradient(135deg,#F59E0B,#FCD34D)',
+      'linear-gradient(135deg,#FF5C3A,#FCA5A5)',
+      'linear-gradient(135deg,#3B82F6,#93C5FD)',
+    ];
+
+    let allData = [], filteredData = [], currentSort = 'score';
+    const medals = ['🥇','🥈','🥉'], rankCls = ['gold','silver','bronze'];
+
+    async function loadData() {
+      try {
+        const resp = await fetch('/api/leaderboard');
+        const rows = await resp.json();
+
+        // Count attempts per student name
+        const counts = {};
+        rows.forEach(r => { counts[r.name] = (counts[r.name]||0)+1; });
+
+        allData = rows.map((r, i) => ({
+          rank:       i + 1,
+          name:       r.name,
+          initials:   r.initials,
+          subject:    r.subject,
+          difficulty: r.difficulty,
+          score:      r.percentage,
+          attempts:   counts[r.name],
+          taken_at:   r.taken_at,
+          grad:       GRADS[i % GRADS.length],
+        }));
+        filteredData = [...allData];
+        updateStats(rows);
+        render();
+      } catch(e) {
+        document.getElementById('leaderboard-body').innerHTML =
+          '<tr><td colspan="6" style="text-align:center;padding:40px;color:var(--muted)">Failed to load data. Please refresh.</td></tr>';
+      }
+    }
+
+    function updateStats(rows) {
+      if (!rows.length) return;
+      const highest     = Math.max(...rows.map(r => r.percentage));
+      const avg         = (rows.reduce((s, r) => s + r.percentage, 0) / rows.length).toFixed(1);
+      const uniqueNames = new Set(rows.map(r => r.name));
+      document.getElementById('stat-top').textContent          = highest + '%';
+      document.getElementById('stat-participants').textContent = uniqueNames.size.toLocaleString();
+      document.getElementById('stat-total').textContent        = rows.length.toLocaleString();
+      document.getElementById('stat-avg').textContent          = avg + '%';
+    }
+
+    function render() {
+      const tbody = document.getElementById('leaderboard-body');
+      if (!filteredData.length) {
+        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:40px;color:var(--muted)">No results found — take a quiz to appear here! 🏆</td></tr>';
+        return;
+      }
+      tbody.innerHTML = filteredData.map((d, i) => `
+        <tr>
+          <td><div class="rank-cell">
+            <div class="rank-badge ${rankCls[i] || ''}">${medals[i] || ''}${d.rank}</div>
+          </div></td>
+          <td><div class="user-cell">
+            <div class="user-avatar" style="background:${d.grad}">${d.initials}</div>
+            <div>
+              <div class="user-name">${d.name}</div>
+              <div class="user-sub">${d.subject} · ${d.taken_at}</div>
+            </div>
+          </div></td>
+          <td>${d.subject}</td>
+          <td><span class="score-cell">${d.score}%</span></td>
+          <td>${d.attempts}</td>
+          <td><div class="prog-wrap">
+            <div class="prog-bg"><div class="prog-fill" style="width:${d.score}%"></div></div>
+            <span class="prog-lbl">${d.score}%</span>
+          </div></td>
+        </tr>`).join('');
+    }
+
+    // Sort buttons
+    document.querySelectorAll('.sort-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        currentSort = btn.dataset.sort;
+        document.querySelectorAll('.sort-btn').forEach(b => b.classList.toggle('active', b === btn));
+        sortAndRender();
+      });
+    });
+
+    function sortAndRender() {
+      if (currentSort === 'attempts') {
+        filteredData.sort((a, b) => b.attempts - a.attempts);
+      } else if (currentSort === 'recent') {
+        filteredData.sort((a, b) => new Date(b.taken_at) - new Date(a.taken_at));
+      } else {
+        filteredData.sort((a, b) => b.score - a.score);
+      }
+      filteredData.forEach((d, i) => d.rank = i + 1);
+      render();
+    }
+
+    // Subject filter
+    document.getElementById('subject-filter').addEventListener('change', function() {
+      filteredData = this.value ? allData.filter(d => d.subject === this.value) : [...allData];
+      // also reapply time filter
+      applyTimeFilter();
+      sortAndRender();
+    });
+
+    // Time filter — now actually works
+    document.getElementById('time-filter').addEventListener('change', function() {
+      applyTimeFilter();
+      sortAndRender();
+    });
+
+    function applyTimeFilter() {
+      const subjectVal = document.getElementById('subject-filter').value;
+      const timeVal    = document.getElementById('time-filter').value;
+      const now = new Date();
+
+      let base = subjectVal ? allData.filter(d => d.subject === subjectVal) : [...allData];
+
+      if (timeVal === 'week') {
+        const cutoff = new Date(now); cutoff.setDate(cutoff.getDate() - 7);
+        base = base.filter(d => new Date(d.taken_at) >= cutoff);
+      } else if (timeVal === 'month') {
+        const cutoff = new Date(now); cutoff.setMonth(cutoff.getMonth() - 1);
+        base = base.filter(d => new Date(d.taken_at) >= cutoff);
+      } else if (timeVal === 'day') {
+        base = base.filter(d => {
+          const da = new Date(d.taken_at);
+          return da.getFullYear()===now.getFullYear() && da.getMonth()===now.getMonth() && da.getDate()===now.getDate();
+        });
+      }
+      filteredData = base;
+    }
+
+    function openSidebar()  { document.getElementById('sidebar').classList.add('open');    document.getElementById('overlay').classList.add('show'); }
+    function closeSidebar() { document.getElementById('sidebar').classList.remove('open'); document.getElementById('overlay').classList.remove('show'); }
+
+    loadData();
+  </script>
+</body>
+</html>

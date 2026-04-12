@@ -1,0 +1,1135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EduBoard – Student Data Collection & Semester Prediction</title>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Bricolage+Grotesque:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --purple: #7C3AED;
+      --purple-dark: #4C1D95;
+      --purple-soft: #F5F3FF;
+      --purple-mid: #DDD6FE;
+      --accent-coral: #FF5C3A;
+      --accent-green: #1DBF73;
+      --accent-amber: #F59E0B;
+      --accent-blue: #3B82F6;
+      --bg: #FAF8FF;
+      --card: #FFFFFF;
+      --text: #1E1030;
+      --muted: #6B6B8A;
+      --light: #C4B8E8;
+      --border: #EDE9F8;
+      --sh-sm: 0 1px 4px rgba(124, 58, 237, 0.06);
+      --sh-md: 0 4px 20px rgba(124, 58, 237, 0.10);
+      --sh-lg: 0 8px 40px rgba(124, 58, 237, 0.14);
+      --r: 14px;
+      --rsm: 9px;
+    }
+    
+    *, *::before, *::after {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      height: 100vh;
+      display: flex;
+      overflow: hidden;
+    }
+    
+    a { text-decoration: none; color: inherit; }
+    
+    /* SIDEBAR */
+    .sidebar {
+      width: 218px;
+      min-height: 100vh;
+      background: var(--card);
+      border-right: 1.5px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      padding: 28px 16px 24px;
+      flex-shrink: 0;
+      animation: slideInLeft 0.45s ease both;
+      overflow-y: auto;
+    }
+    
+    @keyframes slideInLeft {
+      from { opacity: 0; transform: translateX(-18px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+    
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 0 6px 28px;
+    }
+    
+    .brand-icon {
+      width: 34px;
+      height: 34px;
+      background: var(--purple);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 14px rgba(124, 58, 237, 0.35);
+      font-size: 18px;
+    }
+    
+    .brand-name {
+      font-family: 'Bricolage Grotesque', sans-serif;
+      font-size: 17px;
+      font-weight: 800;
+      color: var(--text);
+      letter-spacing: -0.5px;
+    }
+    
+    .brand-name span {
+      color: var(--purple);
+    }
+    
+    .nav-group {
+      margin-bottom: 6px;
+    }
+    
+    .nav-group-label {
+      font-size: 10px;
+      font-weight: 700;
+      color: var(--light);
+      text-transform: uppercase;
+      letter-spacing: 1.2px;
+      padding: 0 8px 8px;
+      display: block;
+    }
+    
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 11px;
+      padding: 10px 12px;
+      border-radius: var(--rsm);
+      font-size: 13.5px;
+      font-weight: 500;
+      color: var(--muted);
+      cursor: pointer;
+      transition: all 0.18s;
+      margin-bottom: 2px;
+      user-select: none;
+    }
+    
+    .nav-item:hover {
+      background: var(--purple-soft);
+      color: var(--purple);
+      transform: translateX(2px);
+    }
+    
+    .nav-item.active {
+      background: var(--purple);
+      color: white;
+      font-weight: 600;
+      box-shadow: 0 4px 16px rgba(124, 58, 237, 0.30);
+    }
+    
+    .sidebar-user {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 12px;
+      background: var(--purple-soft);
+      border-radius: var(--rsm);
+      margin-top: auto;
+    }
+    
+    .su-avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--purple), #A78BFA);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      font-weight: 800;
+      color: white;
+      flex-shrink: 0;
+    }
+    
+    .su-info {
+      flex: 1;
+      min-width: 0;
+    }
+    
+    .su-name {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    
+    .su-role {
+      font-size: 11px;
+      color: var(--muted);
+    }
+    
+    .su-logout {
+      font-size: 16px;
+      cursor: pointer;
+      color: var(--muted);
+      transition: color 0.2s;
+      padding: 4px;
+    }
+    
+    .su-logout:hover {
+      color: var(--accent-coral);
+    }
+    
+    /* CONTENT */
+    .content {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      min-width: 0;
+      height: 100vh;
+    }
+    
+    .topbar {
+      background: var(--card);
+      border-bottom: 1.5px solid var(--border);
+      padding: 14px 28px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-shrink: 0;
+      animation: slideInDown 0.4s ease both;
+    }
+    
+    @keyframes slideInDown {
+      from { opacity: 0; transform: translateY(-10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .topbar-left h1 {
+      font-family: 'Bricolage Grotesque', sans-serif;
+      font-size: 19px;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+    }
+    
+    .topbar-left p {
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 1px;
+    }
+    
+    /* MAIN AREA */
+    .main {
+      flex: 1;
+      padding: 22px 24px;
+      overflow-y: auto;
+      overflow-x: hidden;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+      min-height: 0;
+    }
+    
+    /* Form Container */
+    .form-container {
+      background: var(--card);
+      border-radius: var(--r);
+      border: 1.5px solid var(--border);
+      box-shadow: var(--sh-sm);
+      padding: 24px;
+      animation: slideUp 0.5s ease both;
+    }
+    
+    @keyframes slideUp {
+      from { opacity: 0; transform: translateY(16px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .form-title {
+      font-family: 'Bricolage Grotesque', sans-serif;
+      font-size: 18px;
+      font-weight: 700;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    
+    /* Form Sections */
+    .form-section {
+      margin-bottom: 28px;
+      padding-bottom: 28px;
+      border-bottom: 1.5px solid var(--border);
+    }
+    
+    .form-section:last-child {
+      border-bottom: none;
+      margin-bottom: 0;
+      padding-bottom: 0;
+    }
+    
+    .section-title {
+      font-family: 'Bricolage Grotesque', sans-serif;
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--purple);
+      margin-bottom: 14px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    
+    /* Form Grid */
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+    
+    .form-group {
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .form-label {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    
+    .form-input,
+    .form-select {
+      padding: 10px 12px;
+      border: 1.5px solid var(--border);
+      border-radius: var(--rsm);
+      font-size: 13px;
+      font-family: inherit;
+      color: var(--text);
+      background: white;
+      transition: all 0.2s;
+    }
+    
+    .form-input:focus,
+    .form-select:focus {
+      outline: none;
+      border-color: var(--purple);
+      box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.08);
+    }
+    
+    .form-input::placeholder {
+      color: var(--light);
+    }
+    
+    /* Subject Marks Grid */
+    .subjects-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 14px;
+      margin-bottom: 16px;
+    }
+    
+    .subject-card {
+      background: var(--purple-soft);
+      border: 1.5px solid var(--purple-mid);
+      border-radius: var(--rsm);
+      padding: 12px;
+    }
+    
+    .subject-name {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--purple);
+      margin-bottom: 8px;
+    }
+    
+    .subject-input {
+      width: 100%;
+      padding: 8px 10px;
+      border: 1.5px solid var(--purple);
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 700;
+      text-align: center;
+      color: var(--text);
+      background: white;
+    }
+    
+    .subject-input:focus {
+      outline: none;
+      box-shadow: 0 0 0 2px rgba(124, 58, 237, 0.15);
+    }
+    
+    /* Button Group */
+    .button-group {
+      display: flex;
+      gap: 12px;
+      margin-top: 28px;
+      flex-wrap: wrap;
+    }
+    
+    .btn {
+      padding: 12px 24px;
+      border: none;
+      border-radius: var(--rsm);
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-family: inherit;
+    }
+    
+    .btn-primary {
+      background: linear-gradient(135deg, var(--purple), #A855F7);
+      color: white;
+      box-shadow: 0 4px 16px rgba(124, 58, 237, 0.3);
+      flex: 1;
+      min-width: 200px;
+    }
+    
+    .btn-primary:hover {
+      background: linear-gradient(135deg, var(--purple-dark), #9333EA);
+      transform: translateY(-1px);
+      box-shadow: 0 6px 22px rgba(124, 58, 237, 0.4);
+    }
+    
+    .btn-primary:active {
+      transform: translateY(0);
+    }
+    
+    .btn-secondary {
+      background: var(--bg);
+      border: 1.5px solid var(--border);
+      color: var(--muted);
+    }
+    
+    .btn-secondary:hover {
+      border-color: var(--purple);
+      color: var(--purple);
+      background: var(--purple-soft);
+    }
+    
+    .btn-predict {
+      background: linear-gradient(135deg, var(--accent-green), #10B981);
+      color: white;
+      box-shadow: 0 4px 16px rgba(29, 191, 115, 0.3);
+      min-width: 180px;
+    }
+    
+    .btn-predict:hover {
+      background: linear-gradient(135deg, #059669, #047857);
+      transform: translateY(-1px);
+      box-shadow: 0 6px 22px rgba(29, 191, 115, 0.4);
+    }
+    
+    /* Prediction Result Modal */
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+      animation: fadeIn 0.3s ease;
+    }
+    
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+    
+    .modal.show {
+      display: flex;
+    }
+    
+    .modal-content {
+      background: var(--card);
+      border-radius: var(--r);
+      padding: 32px;
+      max-width: 500px;
+      width: 90%;
+      box-shadow: var(--sh-lg);
+      animation: slideUp 0.3s ease;
+      max-height: 80vh;
+      overflow-y: auto;
+    }
+    
+    .modal-header {
+      text-align: center;
+      margin-bottom: 24px;
+    }
+    
+    .modal-emoji {
+      font-size: 56px;
+      margin-bottom: 12px;
+    }
+    
+    .modal-title {
+      font-family: 'Bricolage Grotesque', sans-serif;
+      font-size: 24px;
+      font-weight: 800;
+      margin-bottom: 8px;
+    }
+    
+    .modal-sub {
+      font-size: 13px;
+      color: var(--muted);
+    }
+    
+    /* Prediction Stats */
+    .prediction-stats {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin: 20px 0;
+    }
+    
+    .pred-stat {
+      background: var(--purple-soft);
+      border: 1.5px solid var(--purple-mid);
+      border-radius: var(--rsm);
+      padding: 14px;
+      text-align: center;
+    }
+    
+    .pred-stat-val {
+      font-family: 'Bricolage Grotesque', sans-serif;
+      font-size: 28px;
+      font-weight: 800;
+      color: var(--purple);
+      margin-bottom: 4px;
+    }
+    
+    .pred-stat-label {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--muted);
+      text-transform: uppercase;
+    }
+    
+    /* Analysis Grid */
+    .analysis-grid {
+      background: var(--bg);
+      border-radius: var(--rsm);
+      padding: 16px;
+      margin: 20px 0;
+    }
+    
+    .analysis-title {
+      font-weight: 700;
+      margin-bottom: 12px;
+      color: var(--text);
+    }
+    
+    .analysis-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    
+    .analysis-list li {
+      font-size: 13px;
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .analysis-list li::before {
+      content: '→';
+      color: var(--purple);
+      font-weight: 700;
+    }
+    
+    .modal-buttons {
+      display: flex;
+      gap: 12px;
+      margin-top: 24px;
+    }
+    
+    .btn-close {
+      flex: 1;
+      background: var(--bg);
+      border: 1.5px solid var(--border);
+      color: var(--muted);
+    }
+    
+    .btn-close:hover {
+      border-color: var(--purple);
+      color: var(--purple);
+    }
+    
+    /* Scrollbar */
+    .main::-webkit-scrollbar,
+    .sidebar::-webkit-scrollbar,
+    .modal-content::-webkit-scrollbar {
+      width: 5px;
+    }
+    
+    .main::-webkit-scrollbar-thumb,
+    .sidebar::-webkit-scrollbar-thumb,
+    .modal-content::-webkit-scrollbar-thumb {
+      background: var(--purple-mid);
+      border-radius: 20px;
+    }
+    
+    /* Input number adjustments */
+    input[type="number"]::-webkit-outer-spin-button,
+    input[type="number"]::-webkit-inner-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+    
+    input[type="number"] {
+      -moz-appearance: textfield;
+    }
+    
+    .error-message {
+      color: var(--accent-coral);
+      font-size: 12px;
+      margin-top: 4px;
+    }
+    
+    .success-message {
+      background: #DCFCE7;
+      border: 1.5px solid var(--accent-green);
+      color: #065F46;
+      padding: 12px;
+      border-radius: var(--rsm);
+      font-size: 13px;
+      margin-bottom: 16px;
+    }
+  </style>
+</head>
+<body>
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand-icon">🎓</div>
+      <div class="brand-name">Edu<span>Board</span></div>
+    </div>
+    
+    <div class="nav-group">
+      <span class="nav-group-label">Main</span>
+      <a href="/dashboard" class="nav-item">
+        <span>🏠</span> Dashboard
+      </a>
+      <a href="/quiz" class="nav-item">
+        <span>📝</span> Take Quiz
+      </a>
+      <a href="/analytics" class="nav-item">
+        <span>📊</span> Analytics
+      </a>
+      <a href="/leaderboard" class="nav-item">
+        <span>🏆</span> Leaderboard
+      </a>
+      <a href="/health" class="nav-item">
+        <span>❤️</span> Health & Wellness
+      </a>
+      <a href="/students" class="nav-item">
+        <span>👥</span> Student Records
+      </a>
+      <a href="/data-collection" class="nav-item active">
+        <span>📋</span> Data Collection
+      </a>
+    </div>
+    
+    <div class="nav-group" style="margin-top: auto;">
+      <span class="nav-group-label">Account</span>
+      <a href="#" class="nav-item">
+        <span>⚙️</span> Settings
+      </a>
+      <a href="#" class="nav-item">
+        <span>❓</span> Help
+      </a>
+    </div>
+    
+    <div class="sidebar-user">
+      <div class="su-avatar">{{ user.initials }}</div>
+      <div class="su-info">
+        <div class="su-name">{{ user.first_name }}</div>
+        <div class="su-role">{{ user.role|capitalize }}</div>
+      </div>
+      <div class="su-logout" onclick="window.location='/logout'">🚪</div>
+    </div>
+  </aside>
+  
+  <!-- CONTENT -->
+  <div class="content">
+    <!-- TOPBAR -->
+    <div class="topbar">
+      <div class="topbar-left">
+        <h1>📋 Student Data Collection & Prediction</h1>
+        <p>Collect comprehensive student data and predict next semester performance</p>
+      </div>
+    </div>
+    
+    <!-- MAIN AREA -->
+    <div class="main">
+      <div class="form-container">
+        <div class="form-title">
+          <span>📚</span> Complete Student Information
+        </div>
+        
+        <div id="success-message"></div>
+        
+        <!-- PERSONAL INFO SECTION -->
+        <div class="form-section">
+          <div class="section-title">👤 Personal Information</div>
+          <div class="form-grid">
+            <div class="form-group">
+              <label class="form-label">Student Name</label>
+              <input type="text" class="form-input" id="studentName" placeholder="Full name">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Student ID</label>
+              <input type="text" class="form-input" id="studentId" placeholder="e.g., STU001">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Age</label>
+              <input type="number" class="form-input" id="studentAge" min="15" max="25" placeholder="Age">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Class/Semester</label>
+              <select class="form-select" id="currentSemester">
+                <option value="">Select Semester</option>
+                <option value="1">Semester 1</option>
+                <option value="2">Semester 2</option>
+                <option value="3">Semester 3</option>
+                <option value="4">Semester 4</option>
+                <option value="5">Semester 5</option>
+                <option value="6">Semester 6</option>
+                <option value="7">Semester 7</option>
+                <option value="8">Semester 8</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Daily Study Hours</label>
+              <input type="number" class="form-input" id="studyHours" min="0" max="12" step="0.5" placeholder="Study hours/day">
+            </div>
+          </div>
+        </div>
+        
+        <!-- CURRENT SEMESTER MARKS -->
+        <div class="form-section">
+          <div class="section-title">📊 Current Semester Marks (Out of 100)</div>
+          <div class="subjects-grid">
+            <div class="subject-card">
+              <div class="subject-name">Mathematics</div>
+              <input type="number" class="subject-input" id="math" min="0" max="100" placeholder="0-100">
+            </div>
+            <div class="subject-card">
+              <div class="subject-name">Science</div>
+              <input type="number" class="subject-input" id="science" min="0" max="100" placeholder="0-100">
+            </div>
+            <div class="subject-card">
+              <div class="subject-name">English</div>
+              <input type="number" class="subject-input" id="english" min="0" max="100" placeholder="0-100">
+            </div>
+            <div class="subject-card">
+              <div class="subject-name">History</div>
+              <input type="number" class="subject-input" id="history" min="0" max="100" placeholder="0-100">
+            </div>
+            <div class="subject-card">
+              <div class="subject-name">Geography</div>
+              <input type="number" class="subject-input" id="geography" min="0" max="100" placeholder="0-100">
+            </div>
+          </div>
+        </div>
+        
+        <!-- PREVIOUS SEMESTER DATA -->
+        <div class="form-section">
+          <div class="section-title">📈 Previous Semester Performance</div>
+          <div class="form-grid">
+            <div class="form-group">
+              <label class="form-label">Previous Semester GPA</label>
+              <input type="number" class="form-input" id="prevGpa" min="0" max="4" step="0.01" placeholder="0.00 - 4.00">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Attendance % (Previous)</label>
+              <input type="number" class="form-input" id="prevAttendance" min="0" max="100" placeholder="0-100%">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Assignments Score %</label>
+              <input type="number" class="form-input" id="assignmentMarks" min="0" max="100" placeholder="0-100%">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Number of Backlogs</label>
+              <input type="number" class="form-input" id="backlogs" min="0" max="10" placeholder="Number of backlogs">
+            </div>
+          </div>
+        </div>
+        
+        <!-- ACTION BUTTONS -->
+        <div class="button-group">
+          <button class="btn btn-secondary" onclick="resetForm()">Clear All</button>
+          <button class="btn btn-primary" onclick="saveStudentData()">Save Student Data</button>
+          <button class="btn btn-predict" onclick="predictNextSemester()">🔮 Predict Next Semester</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- PREDICTION MODAL -->
+  <div id="predictionModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <div class="modal-emoji" id="predictionEmoji">🎯</div>
+        <div class="modal-title" id="predictionTitle">Prediction Result</div>
+        <div class="modal-sub" id="predictionSub">Based on your academic data</div>
+      </div>
+      
+      <div class="prediction-stats">
+        <div class="pred-stat">
+          <div class="pred-stat-val" id="predictedGpa">3.8</div>
+          <div class="pred-stat-label">Predicted GPA</div>
+        </div>
+        <div class="pred-stat">
+          <div class="pred-stat-val" id="successProbability">92%</div>
+          <div class="pred-stat-label">Success Probability</div>
+        </div>
+      </div>
+      
+      <div class="analysis-grid">
+        <div class="analysis-title">📌 Key Insights & Recommendations</div>
+        <ul class="analysis-list" id="recommendationsList">
+          <li>Focus on weak subjects for better performance</li>
+          <li>Maintain consistent study hours (7-8 hours daily)</li>
+          <li>Improve attendance to 95% or higher</li>
+          <li>Complete all assignments on time</li>
+        </ul>
+      </div>
+      
+      <div class="analysis-grid" style="background: #DCFCE7; border: 1.5px solid var(--accent-green);">
+        <div class="analysis-title" style="color: var(--accent-green);">✅ Strengths</div>
+        <ul class="analysis-list" id="strengthsList" style="color: var(--accent-green);">
+          <li>Strong mathematics foundation</li>
+          <li>Good attendance pattern</li>
+          <li>Consistent performance in Science</li>
+        </ul>
+      </div>
+      
+      <div class="analysis-grid" style="background: #FEE2E2; border: 1.5px solid var(--accent-coral);">
+        <div class="analysis-title" style="color: var(--accent-coral);">⚠️ Areas to Improve</div>
+        <ul class="analysis-list" id="improvementList" style="color: var(--accent-coral);">
+          <li>Increase daily study hours</li>
+          <li>Focus on English and History</li>
+          <li>Reduce number of backlogs</li>
+        </ul>
+      </div>
+      
+      <div class="modal-buttons">
+        <button class="btn btn-secondary btn-close" onclick="closeModal()">Close</button>
+        <button class="btn btn-primary" onclick="downloadReport()">📥 Download Report</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Student Data Object
+    let studentData = {
+      personal: {},
+      currentSemesterMarks: {},
+      previousSemester: {},
+      prediction: null
+    };
+    
+    // Save Student Data
+    function saveStudentData() {
+      // Collect personal info
+      studentData.personal = {
+        name: document.getElementById('studentName').value,
+        id: document.getElementById('studentId').value,
+        age: parseInt(document.getElementById('studentAge').value) || 0,
+        semester: document.getElementById('currentSemester').value,
+        studyHours: parseFloat(document.getElementById('studyHours').value) || 0
+      };
+      
+      // Collect current semester marks
+      studentData.currentSemesterMarks = {
+        math: parseInt(document.getElementById('math').value) || 0,
+        science: parseInt(document.getElementById('science').value) || 0,
+        english: parseInt(document.getElementById('english').value) || 0,
+        history: parseInt(document.getElementById('history').value) || 0,
+        geography: parseInt(document.getElementById('geography').value) || 0
+      };
+      
+      // Collect previous semester data
+      studentData.previousSemester = {
+        gpa: parseFloat(document.getElementById('prevGpa').value) || 0,
+        attendance: parseInt(document.getElementById('prevAttendance').value) || 0,
+        assignments: parseInt(document.getElementById('assignmentMarks').value) || 0,
+        backlogs: parseInt(document.getElementById('backlogs').value) || 0
+      };
+      
+      // Show success message
+      const successDiv = document.getElementById('success-message');
+      successDiv.innerHTML = `<div class="success-message">✓ Student data saved successfully for ${studentData.personal.name}</div>`;
+      setTimeout(() => { successDiv.innerHTML = ''; }, 4000);
+      
+      console.log('Student Data Saved:', studentData);
+    }
+    
+    // Predict Next Semester
+    function predictNextSemester() {
+      // Validate data
+      if (!studentData.personal.name || !studentData.personal.id) {
+        alert('⚠️ Please fill in student name and ID first');
+        return;
+      }
+      
+      if (!studentData.currentSemesterMarks.math || !studentData.currentSemesterMarks.science) {
+        alert('⚠️ Please fill in at least Mathematics and Science marks');
+        return;
+      }
+      
+      // Calculate current GPA (simplified: average of marks / 25)
+      const currentMarks = Object.values(studentData.currentSemesterMarks);
+      const currentAverage = currentMarks.reduce((a, b) => a + b) / currentMarks.length;
+      const currentGpa = currentAverage / 25;
+      
+      // Prediction Algorithm
+      let predictedGpa = currentGpa;
+      let baseImprovement = 0.3;
+      
+      // Factor: Study hours (more study = better performance)
+      if (studentData.personal.studyHours >= 7) {
+        baseImprovement += 0.2;
+      } else if (studentData.personal.studyHours >= 5) {
+        baseImprovement += 0.1;
+      } else {
+        baseImprovement -= 0.1;
+      }
+      
+      // Factor: Previous attendance
+      if (studentData.previousSemester.attendance >= 90) {
+        baseImprovement += 0.15;
+      } else if (studentData.previousSemester.attendance < 70) {
+        baseImprovement -= 0.2;
+      }
+      
+      // Factor: Backlogs (fewer = better)
+      if (studentData.previousSemester.backlogs > 0) {
+        baseImprovement -= (studentData.previousSemester.backlogs * 0.15);
+      }
+      
+      // Factor: Assignment performance
+      if (studentData.previousSemester.assignments >= 80) {
+        baseImprovement += 0.1;
+      }
+      
+      predictedGpa = Math.min(4.0, currentGpa + baseImprovement);
+      predictedGpa = Math.max(0, predictedGpa);
+      
+      // Calculate success probability
+      let successProbability = 70 + (predictedGpa * 8);
+      successProbability = Math.min(99, successProbability);
+      
+      // Generate insights
+      const insights = generateInsights(studentData, currentAverage, predictedGpa);
+      
+      // Store prediction
+      studentData.prediction = {
+        gpa: predictedGpa,
+        success: successProbability,
+        insights: insights
+      };
+      
+      // Display prediction
+      displayPrediction(predictedGpa, successProbability, insights);
+    }
+    
+    // Generate Insights
+    function generateInsights(data, currentAvg, predictedGpa) {
+      const insights = {
+        strengths: [],
+        improvements: [],
+        recommendations: []
+      };
+      
+      const marks = data.currentSemesterMarks;
+      const prev = data.previousSemester;
+      
+      // Identify strengths
+      if (marks.math >= 75) insights.strengths.push('Strong mathematics foundation');
+      if (marks.science >= 75) insights.strengths.push('Consistent performance in Science');
+      if (prev.attendance >= 90) insights.strengths.push('Good attendance pattern');
+      if (prev.assignments >= 80) insights.strengths.push('Strong assignment submission rate');
+      if (data.personal.studyHours >= 6) insights.strengths.push('Dedicated study time');
+      
+      if (insights.strengths.length === 0) {
+        insights.strengths.push('Room for improvement in all areas');
+      }
+      
+      // Identify improvements needed
+      if (marks.english < 70) insights.improvements.push('Focus on improving English skills');
+      if (marks.history < 70) insights.improvements.push('Strengthen History concepts');
+      if (marks.geography < 70) insights.improvements.push('Improve Geography knowledge');
+      if (prev.backlogs > 0) insights.improvements.push(`Clear ${prev.backlogs} pending backlog(s)`);
+      if (prev.attendance < 75) insights.improvements.push('Significantly improve attendance');
+      if (data.personal.studyHours < 5) insights.improvements.push('Increase daily study hours');
+      
+      // Recommendations
+      insights.recommendations.push(`Maintain ${Math.round(data.personal.studyHours + 1)} hours daily study routine`);
+      insights.recommendations.push('Focus on weak subjects for balanced performance');
+      insights.recommendations.push('Aim for 95%+ attendance in next semester');
+      insights.recommendations.push('Complete all assignments on time');
+      if (prev.backlogs > 0) {
+        insights.recommendations.push(`Clear all ${prev.backlogs} backlog(s) before final exams`);
+      }
+      insights.recommendations.push('Participate actively in class discussions');
+      
+      return insights;
+    }
+    
+    // Display Prediction
+    function displayPrediction(gpa, probability, insights) {
+      const modal = document.getElementById('predictionModal');
+      
+      // Set emoji and title based on GPA
+      let emoji, title;
+      if (gpa >= 3.7) {
+        emoji = '🌟';
+        title = 'Outstanding Performance Expected!';
+      } else if (gpa >= 3.3) {
+        emoji = '🎉';
+        title = 'Great Performance Predicted!';
+      } else if (gpa >= 2.8) {
+        emoji = '👍';
+        title = 'Good Performance Likely';
+      } else if (gpa >= 2.0) {
+        emoji = '📚';
+        title = 'Need Improvement Areas';
+      } else {
+        emoji = '⚠️';
+        title = 'Significant Efforts Required';
+      }
+      
+      document.getElementById('predictionEmoji').textContent = emoji;
+      document.getElementById('predictionTitle').textContent = title;
+      document.getElementById('predictionSub').textContent = `${studentData.personal.name} - Semester ${studentData.personal.semester}`;
+      
+      // Set stats
+      document.getElementById('predictedGpa').textContent = gpa.toFixed(2);
+      document.getElementById('successProbability').textContent = Math.round(probability) + '%';
+      
+      // Set recommendations
+      document.getElementById('recommendationsList').innerHTML = insights.recommendations
+        .map(r => `<li>${r}</li>`)
+        .join('');
+      
+      document.getElementById('strengthsList').innerHTML = insights.strengths
+        .map(s => `<li>${s}</li>`)
+        .join('');
+      
+      document.getElementById('improvementList').innerHTML = insights.improvements
+        .map(i => `<li>${i}</li>`)
+        .join('');
+      
+      // Show modal
+      modal.classList.add('show');
+    }
+    
+    // Close Modal
+    function closeModal() {
+      document.getElementById('predictionModal').classList.remove('show');
+    }
+    
+    // Download Report
+    function downloadReport() {
+      if (!studentData.prediction) return;
+      
+      const report = `
+STUDENT PERFORMANCE PREDICTION REPORT
+=====================================
+Student Name: ${studentData.personal.name}
+Student ID: ${studentData.personal.id}
+Age: ${studentData.personal.age}
+Current Semester: ${studentData.personal.semester}
+
+CURRENT SEMESTER MARKS:
+Mathematics: ${studentData.currentSemesterMarks.math}
+Science: ${studentData.currentSemesterMarks.science}
+English: ${studentData.currentSemesterMarks.english}
+History: ${studentData.currentSemesterMarks.history}
+Geography: ${studentData.currentSemesterMarks.geography}
+
+PREVIOUS SEMESTER DATA:
+GPA: ${studentData.previousSemester.gpa}
+Attendance: ${studentData.previousSemester.attendance}%
+Assignment Marks: ${studentData.previousSemester.assignments}%
+Backlogs: ${studentData.previousSemester.backlogs}
+
+PREDICTION FOR NEXT SEMESTER:
+Predicted GPA: ${studentData.prediction.gpa.toFixed(2)}
+Success Probability: ${Math.round(studentData.prediction.success)}%
+
+RECOMMENDATIONS:
+${studentData.prediction.insights.recommendations.map((r, i) => `${i+1}. ${r}`).join('\n')}
+
+Generated on: ${new Date().toLocaleString()}
+      `;
+      
+      const blob = new Blob([report], { type: 'text/plain' });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${studentData.personal.name}_prediction_report.txt`;
+      a.click();
+      window.URL.revokeObjectURL(url);
+    }
+    
+    // Reset Form
+    function resetForm() {
+      document.getElementById('studentName').value = '';
+      document.getElementById('studentId').value = '';
+      document.getElementById('studentAge').value = '';
+      document.getElementById('currentSemester').value = '';
+      document.getElementById('studyHours').value = '';
+      document.getElementById('math').value = '';
+      document.getElementById('science').value = '';
+      document.getElementById('english').value = '';
+      document.getElementById('history').value = '';
+      document.getElementById('geography').value = '';
+      document.getElementById('prevGpa').value = '';
+      document.getElementById('prevAttendance').value = '';
+      document.getElementById('assignmentMarks').value = '';
+      document.getElementById('backlogs').value = '';
+      
+      studentData = {
+        personal: {},
+        currentSemesterMarks: {},
+        previousSemester: {},
+        prediction: null
+      };
+    }
+    
+    // Close modal on outside click
+    document.getElementById('predictionModal').addEventListener('click', function(e) {
+      if (e.target === this) {
+        closeModal();
+      }
+    });
+  </script>
+</body>
+</html>

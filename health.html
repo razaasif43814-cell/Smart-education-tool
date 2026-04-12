@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EduBoard – Health & Wellness</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Bricolage+Grotesque:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--purple:#7C3AED;--purple-dark:#4C1D95;--purple-soft:#F5F3FF;--purple-mid:#DDD6FE;--purple-light:#EDE9F8;--accent-coral:#FF5C3A;--accent-green:#1DBF73;--accent-amber:#F59E0B;--accent-blue:#3B82F6;--bg:#FAF8FF;--card:#FFFFFF;--text:#1E1030;--muted:#6B6B8A;--light:#C4B8E8;--border:#EDE9F8;--sh-sm:0 1px 4px rgba(124,58,237,0.06);--sh-md:0 4px 20px rgba(124,58,237,0.10);--r:14px;--rsm:9px}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;overflow:hidden;height:100vh}
+a{text-decoration:none;color:inherit}
+.sidebar{width:218px;min-height:100vh;background:var(--card);border-right:1.5px solid var(--border);display:flex;flex-direction:column;padding:28px 16px 24px;flex-shrink:0;animation:fromLeft .4s ease both}
+@keyframes fromLeft{from{opacity:0;transform:translateX(-16px)}to{opacity:1;transform:translateX(0)}}
+.brand{display:flex;align-items:center;gap:10px;padding:0 6px 28px}
+.brand-icon{width:34px;height:34px;background:var(--purple);border-radius:10px;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 14px rgba(124,58,237,0.35)}
+.brand-icon svg{width:18px;height:18px;fill:white}
+.brand-name{font-family:'Bricolage Grotesque',sans-serif;font-size:17px;font-weight:800;color:var(--text);letter-spacing:-0.5px}
+.brand-name span{color:var(--purple)}
+.nav-group{margin-bottom:6px}
+.nav-group-label{font-size:10px;font-weight:700;color:var(--light);text-transform:uppercase;letter-spacing:1.2px;padding:0 8px 8px;display:block}
+.nav-item{display:flex;align-items:center;gap:11px;padding:10px 12px;border-radius:var(--rsm);font-size:13.5px;font-weight:500;color:var(--muted);cursor:pointer;transition:all .18s;margin-bottom:2px;user-select:none}
+.nav-item:hover{background:var(--purple-soft);color:var(--purple);transform:translateX(2px)}
+.nav-item.active{background:var(--purple);color:white;font-weight:600;box-shadow:0 4px 16px rgba(124,58,237,0.30)}
+.nav-item.active:hover{transform:none}
+.nav-pill-blue{margin-left:auto;font-size:10px;font-weight:700;background:var(--purple-soft);color:var(--purple);padding:2px 7px;border-radius:20px}
+.sidebar-spacer{flex:1}
+.sidebar-bottom{padding:16px 0 0;border-top:1.5px solid var(--border);margin-bottom:0}
+.sidebar-user{display:flex;align-items:center;gap:10px;padding:12px;background:var(--purple-soft);border-radius:var(--rsm)}
+.su-avatar{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,var(--purple),#A78BFA);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;color:white;flex-shrink:0}
+.su-info{flex:1;min-width:0}.su-name{font-size:13px;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.su-role{font-size:11px;color:var(--muted)}
+.logout-btn{display:flex;align-items:center;gap:9px;padding:11px 12px;border-radius:var(--rsm);font-size:13px;font-weight:600;color:var(--accent-coral);cursor:pointer;transition:all .18s;margin-top:6px;margin-bottom:20px;border:1.5px solid transparent;background:transparent;width:100%;font-family:inherit}
+.logout-btn:hover{background:#FFF1EF;border-color:#FECACA;transform:translateX(2px)}
+.content{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0;height:100vh}
+.topbar{background:var(--card);border-bottom:1.5px solid var(--border);padding:14px 28px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.topbar-left h1{font-family:'Bricolage Grotesque',sans-serif;font-size:19px;font-weight:800;letter-spacing:-0.5px}
+.topbar-left p{font-size:12px;color:var(--muted);margin-top:1px}
+.main{flex:1;padding:22px 24px;overflow-y:auto;display:flex;flex-direction:column;gap:18px;height:0}
+.main::-webkit-scrollbar{width:6px}.main::-webkit-scrollbar-thumb{background:var(--purple-mid);border-radius:20px}
+
+/* STAT GRID */
+.stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;animation:fadeUp .5s ease .1s both}
+@keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+.stat-card{background:var(--card);border-radius:var(--r);border:1.5px solid var(--border);box-shadow:var(--sh-sm);padding:18px;display:flex;flex-direction:column;gap:10px;transition:all .2s}
+.stat-card:hover{box-shadow:var(--sh-md);transform:translateY(-2px)}
+.stat-top{display:flex;align-items:flex-start;justify-content:space-between}
+.stat-icon{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px}
+.stat-badge{font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px}
+.badge-good{background:#DCFCE7;color:#15803D}.badge-fair{background:#FEF3C7;color:#B45309}.badge-purple{background:var(--purple-soft);color:var(--purple)}
+.stat-val{font-family:'Bricolage Grotesque',sans-serif;font-size:28px;font-weight:800;letter-spacing:-1px}
+.stat-label{font-size:12px;font-weight:600;color:var(--muted)}
+
+/* ASSESSMENT CARD */
+.assess-card{background:var(--card);border-radius:var(--r);border:1.5px solid var(--border);box-shadow:var(--sh-sm);padding:22px;animation:fadeUp .5s ease .15s both}
+.card-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}
+.card-title{font-family:'Bricolage Grotesque',sans-serif;font-size:16px;font-weight:700}
+.assess-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}
+.assess-item{background:var(--bg);border:1.5px solid var(--border);border-radius:var(--rsm);padding:16px;cursor:pointer;transition:all .2s}
+.assess-item:hover{border-color:var(--purple);background:var(--purple-soft)}
+.assess-item.completed{border-color:var(--accent-green);background:#F0FDF4}
+.ai-header{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.ai-emoji{font-size:22px}
+.ai-name{font-size:14px;font-weight:700;color:var(--text)}
+.ai-bar{height:6px;background:var(--border);border-radius:100px;overflow:hidden;margin:8px 0}
+.ai-fill{height:100%;border-radius:100px;transition:width .8s cubic-bezier(.4,0,.2,1)}
+.ai-meta{font-size:11px;color:var(--muted)}
+
+/* QUESTIONNAIRE */
+.questionnaire{background:var(--card);border-radius:var(--r);border:1.5px solid var(--border);box-shadow:var(--sh-sm);padding:22px;animation:fadeUp .5s ease .2s both;display:none}
+.questionnaire.show{display:block}
+.q-title{font-family:'Bricolage Grotesque',sans-serif;font-size:16px;font-weight:700;margin-bottom:4px}
+.q-sub{font-size:13px;color:var(--muted);margin-bottom:20px}
+.q-list{display:flex;flex-direction:column;gap:16px}
+.q-item{background:var(--bg);border-radius:var(--rsm);padding:14px}
+.q-text{font-size:14px;font-weight:600;margin-bottom:10px}
+.q-options{display:flex;gap:8px;flex-wrap:wrap}
+.q-opt{padding:7px 14px;border:1.5px solid var(--border);border-radius:100px;font-size:12px;font-weight:600;color:var(--muted);cursor:pointer;transition:all .18s;font-family:inherit;background:white}
+.q-opt:hover{border-color:var(--purple);color:var(--purple)}
+.q-opt.selected{background:var(--purple);border-color:var(--purple);color:white}
+.submit-btn{margin-top:18px;padding:13px 28px;background:linear-gradient(135deg,var(--purple),#A855F7);color:white;border:none;border-radius:var(--rsm);font-family:'Bricolage Grotesque',sans-serif;font-size:14px;font-weight:800;cursor:pointer;transition:all .2s;box-shadow:0 4px 16px rgba(124,58,237,0.3)}
+.submit-btn:hover{transform:translateY(-1px);box-shadow:0 6px 22px rgba(124,58,237,0.4)}
+
+/* RESULT BANNER */
+.result-banner{background:linear-gradient(135deg,var(--purple),#A855F7);border-radius:var(--r);padding:20px 24px;color:white;display:flex;align-items:center;gap:16px;animation:fadeUp .4s ease both;display:none}
+.result-banner.show{display:flex}
+.rb-emoji{font-size:40px;flex-shrink:0}
+.rb-body{flex:1}
+.rb-title{font-family:'Bricolage Grotesque',sans-serif;font-size:18px;font-weight:800;margin-bottom:4px}
+.rb-desc{font-size:13px;color:rgba(255,255,255,0.8)}
+.rb-score{font-family:'Bricolage Grotesque',sans-serif;font-size:40px;font-weight:800;flex-shrink:0}
+
+/* TIPS */
+.tips-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;animation:fadeUp .5s ease .25s both}
+.tip-card{background:var(--card);border-radius:var(--r);border:1.5px solid var(--border);box-shadow:var(--sh-sm);padding:18px}
+.tip-icon{font-size:28px;margin-bottom:10px}
+.tip-title{font-weight:700;font-size:14px;margin-bottom:6px}
+.tip-desc{font-size:12.5px;color:var(--muted);line-height:1.6}
+</style>
+</head>
+<body>
+
+<aside class="sidebar">
+  <div class="brand">
+    <div class="brand-icon"><svg viewBox="0 0 24 24"><path d="M12 3L1 9l4 2.18v6L12 21l7-3.82v-6L23 9zm0 2.26L19.16 9 12 12.74 4.84 9zm5 9.26L12 18.74 7 14.52V12.5l5 2.74 5-2.74z"/></svg></div>
+    <div class="brand-name">Edu<span>Board</span></div>
+  </div>
+  <div class="nav-group">
+    <span class="nav-group-label">Main</span>
+    <a class="nav-item" href="/dashboard"><span>🏠</span> Dashboard</a>
+    <a class="nav-item" href="/analytics"><span>📊</span> Analytics <span class="nav-pill-blue">NEW</span></a>
+    <a class="nav-item" href="/quiz"><span>📋</span> Quiz <span class="nav-pill-blue">Live</span></a>
+    <a class="nav-item" href="/leaderboard"><span>🏆</span> Leaderboard</a>
+    <a class="nav-item" href="/marks-analyzer"><span>📊</span> Marks Analyzer</a>
+
+    <a class="nav-item active" href="/health"><span>❤️</span> Health</a>
+  </div>
+  <div class="sidebar-spacer"></div>
+  <div class="sidebar-bottom">
+    <div class="sidebar-user">
+      <div class="su-avatar">{{ user.initials }}</div>
+      <div class="su-info">
+        <div class="su-name">{{ user.first_name }}</div>
+        <div class="su-role">{{ user.role|capitalize }}</div>
+      </div>
+    </div>
+    <a href="/logout" class="logout-btn"><span style="font-size:16px">⏻</span> Logout</a>
+  </div>
+</aside>
+
+<div class="content">
+  <div class="topbar">
+    <div class="topbar-left">
+      <h1>❤️ Health & Wellness</h1>
+      <p>Hi {{ user.first_name }} 👋 — Check in with your wellbeing today</p>
+    </div>
+  </div>
+
+  <div class="main">
+
+    <!-- Result Banner (hidden until quiz submitted) -->
+    <div class="result-banner" id="result-banner">
+      <div class="rb-emoji" id="rb-emoji">🌟</div>
+      <div class="rb-body">
+        <div class="rb-title" id="rb-title">Excellent Wellness!</div>
+        <div class="rb-desc" id="rb-desc">Your overall wellness score is very high. Keep it up!</div>
+      </div>
+      <div class="rb-score" id="rb-score">92%</div>
+    </div>
+
+    <!-- STAT CARDS -->
+    <div class="stat-grid">
+      <div class="stat-card">
+        <div class="stat-top"><div class="stat-icon" style="background:#FEE2E2">🧠</div><span class="stat-badge badge-good">Good</span></div>
+        <div class="stat-val" id="mental-score">—</div>
+        <div class="stat-label">Mental Wellness</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-top"><div class="stat-icon" style="background:#DCFCE7">💪</div><span class="stat-badge badge-good">Good</span></div>
+        <div class="stat-val" id="physical-score">—</div>
+        <div class="stat-label">Physical Health</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-top"><div class="stat-icon" style="background:#FEF3C7">😴</div><span class="stat-badge badge-fair">Fair</span></div>
+        <div class="stat-val" id="sleep-score">—</div>
+        <div class="stat-label">Sleep Quality</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-top"><div class="stat-icon" style="background:var(--purple-soft)">📊</div><span class="stat-badge badge-purple">Overall</span></div>
+        <div class="stat-val" id="overall-score">—</div>
+        <div class="stat-label">Overall Wellness</div>
+      </div>
+    </div>
+
+    <!-- ASSESSMENT AREAS -->
+    <div class="assess-card">
+      <div class="card-header"><div class="card-title">🩺 Wellness Assessment Areas</div><span style="font-size:12px;color:var(--muted)">Click to assess</span></div>
+      <div class="assess-grid">
+        <div class="assess-item" id="card-mental" onclick="openQuiz('mental')">
+          <div class="ai-header"><span class="ai-emoji">🧠</span><span class="ai-name">Mental Wellness</span></div>
+          <div class="ai-bar"><div class="ai-fill" id="fill-mental" style="width:0%;background:#A78BFA"></div></div>
+          <div class="ai-meta" id="meta-mental">Not yet assessed — click to start</div>
+        </div>
+        <div class="assess-item" id="card-physical" onclick="openQuiz('physical')">
+          <div class="ai-header"><span class="ai-emoji">💪</span><span class="ai-name">Physical Health</span></div>
+          <div class="ai-bar"><div class="ai-fill" id="fill-physical" style="width:0%;background:#1DBF73"></div></div>
+          <div class="ai-meta" id="meta-physical">Not yet assessed — click to start</div>
+        </div>
+        <div class="assess-item" id="card-sleep" onclick="openQuiz('sleep')">
+          <div class="ai-header"><span class="ai-emoji">😴</span><span class="ai-name">Sleep Quality</span></div>
+          <div class="ai-bar"><div class="ai-fill" id="fill-sleep" style="width:0%;background:#F59E0B"></div></div>
+          <div class="ai-meta" id="meta-sleep">Not yet assessed — click to start</div>
+        </div>
+        <div class="assess-item" id="card-nutrition" onclick="openQuiz('nutrition')">
+          <div class="ai-header"><span class="ai-emoji">🥗</span><span class="ai-name">Nutrition & Diet</span></div>
+          <div class="ai-bar"><div class="ai-fill" id="fill-nutrition" style="width:0%;background:#10B981"></div></div>
+          <div class="ai-meta" id="meta-nutrition">Not yet assessed — click to start</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- QUESTIONNAIRE PANEL -->
+    <div class="questionnaire" id="questionnaire">
+      <div class="q-title" id="q-title">Mental Wellness Check</div>
+      <div class="q-sub" id="q-sub">Answer honestly for the most accurate results</div>
+      <div class="q-list" id="q-list"></div>
+      <button class="submit-btn" onclick="submitQuiz()">Submit Assessment →</button>
+    </div>
+
+    <!-- WELLNESS TIPS -->
+    <div class="tips-grid">
+      <div class="tip-card">
+        <div class="tip-icon">🧘</div>
+        <div class="tip-title">Mindfulness Daily</div>
+        <div class="tip-desc">Spend 5–10 minutes meditating each morning. It reduces stress and improves focus for studying.</div>
+      </div>
+      <div class="tip-card">
+        <div class="tip-icon">🏃</div>
+        <div class="tip-title">Move Your Body</div>
+        <div class="tip-desc">30 minutes of light exercise 3x a week boosts memory, mood, and academic performance.</div>
+      </div>
+      <div class="tip-card">
+        <div class="tip-icon">💧</div>
+        <div class="tip-title">Stay Hydrated</div>
+        <div class="tip-desc">Drinking 2–3 litres of water daily keeps your brain sharp and energy levels steady.</div>
+      </div>
+      <div class="tip-card">
+        <div class="tip-icon">😴</div>
+        <div class="tip-title">Quality Sleep</div>
+        <div class="tip-desc">Aim for 7–9 hours of sleep. Consistent sleep schedules improve memory consolidation.</div>
+      </div>
+      <div class="tip-card">
+        <div class="tip-icon">📵</div>
+        <div class="tip-title">Digital Detox</div>
+        <div class="tip-desc">Take 1-hour breaks from screens between study sessions to reduce eye strain and mental fatigue.</div>
+      </div>
+      <div class="tip-card">
+        <div class="tip-icon">🥗</div>
+        <div class="tip-title">Eat Brain Food</div>
+        <div class="tip-desc">Include nuts, berries, and leafy greens in your diet. They support cognitive function and mood.</div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+const QUIZZES = {
+  mental: {
+    title: '🧠 Mental Wellness Check',
+    sub: 'Assess your stress levels and emotional wellbeing',
+    questions: [
+      { text: 'How often do you feel stressed about studies?', opts: ['Never', 'Rarely', 'Sometimes', 'Often', 'Always'] },
+      { text: 'How would you rate your overall mood this week?', opts: ['Very Low', 'Low', 'Moderate', 'Good', 'Excellent'] },
+      { text: 'Do you feel motivated to attend classes?', opts: ['Never', 'Rarely', 'Sometimes', 'Usually', 'Always'] },
+      { text: 'How well can you concentrate during studies?', opts: ['Very Poor', 'Poor', 'Average', 'Good', 'Excellent'] },
+    ]
+  },
+  physical: {
+    title: '💪 Physical Health Check',
+    sub: 'Evaluate your exercise habits and energy levels',
+    questions: [
+      { text: 'How many days per week do you exercise?', opts: ['0 days', '1–2 days', '3–4 days', '5–6 days', 'Every day'] },
+      { text: 'How would you rate your overall energy level?', opts: ['Very Low', 'Low', 'Moderate', 'High', 'Very High'] },
+      { text: 'Do you experience frequent headaches or body pain?', opts: ['Always', 'Often', 'Sometimes', 'Rarely', 'Never'] },
+      { text: 'How much water do you drink daily?', opts: ['< 1L', '1–1.5L', '1.5–2L', '2–2.5L', '> 2.5L'] },
+    ]
+  },
+  sleep: {
+    title: '😴 Sleep Quality Check',
+    sub: 'Understand your sleep patterns and quality',
+    questions: [
+      { text: 'How many hours do you sleep per night on average?', opts: ['< 4hrs', '4–5hrs', '5–6hrs', '6–7hrs', '7–9hrs'] },
+      { text: 'How long does it typically take you to fall asleep?', opts: ['> 1 hour', '30–60 min', '15–30 min', '5–15 min', '< 5 min'] },
+      { text: 'Do you wake up feeling refreshed?', opts: ['Never', 'Rarely', 'Sometimes', 'Usually', 'Always'] },
+      { text: 'How often do you have trouble sleeping?', opts: ['Every night', 'Often', 'Sometimes', 'Rarely', 'Never'] },
+    ]
+  },
+  nutrition: {
+    title: '🥗 Nutrition & Diet Check',
+    sub: 'Review your eating habits and nutritional balance',
+    questions: [
+      { text: 'How often do you eat home-cooked balanced meals?', opts: ['Never', 'Rarely', 'Sometimes', 'Usually', 'Always'] },
+      { text: 'How often do you skip breakfast?', opts: ['Every day', 'Often', 'Sometimes', 'Rarely', 'Never'] },
+      { text: 'How much junk food do you consume per week?', opts: ['Daily', '4–5x', '2–3x', 'Once', 'Rarely'] },
+      { text: 'Do you eat fruits and vegetables daily?', opts: ['Never', 'Rarely', 'Sometimes', 'Usually', 'Always'] },
+    ]
+  }
+};
+
+const SCORES = {};
+let currentCategory = null;
+let currentAnswers = [];
+
+function openQuiz(cat) {
+  currentCategory = cat;
+  const quiz = QUIZZES[cat];
+  currentAnswers = new Array(quiz.questions.length).fill(null);
+
+  document.getElementById('q-title').textContent = quiz.title;
+  document.getElementById('q-sub').textContent = quiz.sub;
+
+  document.getElementById('q-list').innerHTML = quiz.questions.map((q, qi) => `
+    <div class="q-item">
+      <div class="q-text">Q${qi+1}: ${q.text}</div>
+      <div class="q-options">
+        ${q.opts.map((o, oi) => `
+          <button class="q-opt" id="opt-${qi}-${oi}" onclick="selectOpt(${qi},${oi})">${o}</button>
+        `).join('')}
+      </div>
+    </div>
+  `).join('');
+
+  const panel = document.getElementById('questionnaire');
+  panel.classList.add('show');
+  panel.scrollIntoView({behavior:'smooth', block:'start'});
+}
+
+function selectOpt(qi, oi) {
+  const quiz = QUIZZES[currentCategory];
+  quiz.questions[qi].opts.forEach((_, i) => {
+    document.getElementById(`opt-${qi}-${i}`).classList.remove('selected');
+  });
+  document.getElementById(`opt-${qi}-${oi}`).classList.add('selected');
+  currentAnswers[qi] = oi;
+}
+
+function submitQuiz() {
+  if (currentAnswers.includes(null)) {
+    alert('Please answer all questions before submitting.');
+    return;
+  }
+  // Score: average of selected option index (0-4), normalized to 0–100
+  const raw = currentAnswers.reduce((s,v)=>s+v,0);
+  const max = (currentAnswers.length) * 4;
+  const pct = Math.round((raw / max) * 100);
+
+  SCORES[currentCategory] = pct;
+
+  // Update card
+  document.getElementById(`fill-${currentCategory}`).style.width = pct + '%';
+  document.getElementById(`meta-${currentCategory}`).textContent = `Score: ${pct}% — completed today`;
+  document.getElementById(`card-${currentCategory}`).classList.add('completed');
+
+  // Update stat cards
+  const scoreMap = {mental:'mental-score', physical:'physical-score', sleep:'sleep-score'};
+  if (scoreMap[currentCategory]) document.getElementById(scoreMap[currentCategory]).textContent = pct + '%';
+
+  const keys = Object.keys(SCORES);
+  if (keys.length > 0) {
+    const avg = Math.round(keys.reduce((s,k)=>s+SCORES[k],0)/keys.length);
+    document.getElementById('overall-score').textContent = avg + '%';
+    showResult(avg);
+  }
+
+  document.getElementById('questionnaire').classList.remove('show');
+}
+
+function showResult(avg) {
+  let emoji, title, desc;
+  if (avg >= 85) { emoji='🌟'; title='Excellent Wellness!'; desc='Your overall health is outstanding. Keep maintaining these great habits!'; }
+  else if (avg >= 70) { emoji='😊'; title='Good Wellness!'; desc='You\'re doing well overall. Minor improvements in a few areas will make you even better.'; }
+  else if (avg >= 55) { emoji='📈'; title='Average Wellness'; desc='There are a few areas that need attention. Focus on sleep and physical activity.'; }
+  else { emoji='⚠️'; title='Wellness Needs Attention'; desc='Please take steps to improve your overall health. Consider talking to a counsellor.'; }
+
+  document.getElementById('rb-emoji').textContent = emoji;
+  document.getElementById('rb-title').textContent = title;
+  document.getElementById('rb-desc').textContent = desc;
+  document.getElementById('rb-score').textContent = avg + '%';
+  const banner = document.getElementById('result-banner');
+  banner.classList.add('show');
+  banner.scrollIntoView({behavior:'smooth', block:'start'});
+}
+</script>
+</body>
+</html>

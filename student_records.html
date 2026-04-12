@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EduBoard – Student Records</title>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Bricolage+Grotesque:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --purple:#7C3AED; --purple-dark:#4C1D95; --purple-soft:#F5F3FF;
+      --purple-mid:#DDD6FE; --accent-coral:#FF5C3A; --accent-green:#1DBF73;
+      --accent-amber:#F59E0B; --accent-blue:#3B82F6;
+      --bg:#FAF8FF; --card:#FFFFFF; --text:#1E1030;
+      --muted:#6B6B8A; --light:#C4B8E8; --border:#EDE9F8;
+      --sh-sm:0 1px 4px rgba(124,58,237,.06); --sh-md:0 4px 20px rgba(124,58,237,.10);
+      --sh-lg:0 8px 40px rgba(124,58,237,.18); --r:14px; --rsm:9px;
+    }
+    *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+
+    /* ── ROOT: no overflow:hidden — lets page scroll ── */
+    html, body { height:100%; }
+    body { font-family:'Plus Jakarta Sans',sans-serif; background:var(--bg); color:var(--text); }
+    a { text-decoration:none; color:inherit; }
+
+    /* ── SIDEBAR ── */
+    .sidebar {
+      position:fixed; top:0; left:0; width:218px; height:100%;
+      background:var(--card); border-right:1.5px solid var(--border);
+      display:flex; flex-direction:column; padding:28px 16px 24px;
+      overflow-y:auto; z-index:300;
+      transition:transform .28s cubic-bezier(.4,0,.2,1);
+    }
+    @media(max-width:768px){
+      .sidebar { transform:translateX(-100%); box-shadow:var(--sh-lg); }
+      .sidebar.open { transform:translateX(0); }
+    }
+    .sidebar::-webkit-scrollbar { width:4px; }
+    .sidebar::-webkit-scrollbar-thumb { background:var(--purple-mid); border-radius:20px; }
+
+    .brand { display:flex; align-items:center; gap:10px; padding:0 6px 28px; }
+    .brand-icon {
+      width:34px; height:34px; background:var(--purple); border-radius:10px;
+      display:flex; align-items:center; justify-content:center;
+      box-shadow:0 4px 14px rgba(124,58,237,.35); font-size:18px;
+    }
+    .brand-name { font-family:'Bricolage Grotesque',sans-serif; font-size:17px; font-weight:800; letter-spacing:-.5px; }
+    .brand-name span { color:var(--purple); }
+
+    .nav-group { margin-bottom:6px; }
+    .nav-group-label { font-size:10px; font-weight:700; color:var(--light); text-transform:uppercase; letter-spacing:1.2px; padding:0 8px 8px; display:block; }
+    .nav-item {
+      display:flex; align-items:center; gap:11px; padding:10px 12px; border-radius:var(--rsm);
+      font-size:13.5px; font-weight:500; color:var(--muted);
+      cursor:pointer; transition:all .18s; margin-bottom:2px; user-select:none;
+    }
+    .nav-item:hover { background:var(--purple-soft); color:var(--purple); transform:translateX(2px); }
+    .nav-item.active { background:var(--purple); color:#fff; font-weight:600; box-shadow:0 4px 16px rgba(124,58,237,.30); }
+    .nav-item.active:hover { transform:none; }
+
+    .sidebar-user { display:flex; align-items:center; gap:10px; padding:12px; background:var(--purple-soft); border-radius:var(--rsm); margin-top:auto; }
+    .su-avatar { width:32px; height:32px; border-radius:50%; background:linear-gradient(135deg,var(--purple),#A78BFA); display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:800; color:#fff; flex-shrink:0; }
+    .su-info { flex:1; min-width:0; }
+    .su-name { font-size:13px; font-weight:700; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .su-role { font-size:11px; color:var(--muted); }
+    .su-logout { font-size:16px; cursor:pointer; color:var(--muted); transition:color .2s; padding:4px; }
+    .su-logout:hover { color:var(--accent-coral); }
+
+    /* ── OVERLAY ── */
+    .overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,.45); z-index:200; }
+    .overlay.show { display:block; }
+
+    /* ── PAGE WRAPPER ── */
+    .page-wrap { margin-left:218px; display:flex; flex-direction:column; min-height:100vh; }
+    @media(max-width:768px) { .page-wrap { margin-left:0; } }
+
+    /* ── TOPBAR ── */
+    .topbar {
+      position:sticky; top:0; z-index:100;
+      background:var(--card); border-bottom:1.5px solid var(--border);
+      padding:14px 24px; display:flex; align-items:center; gap:12px; flex-shrink:0;
+    }
+    .hamburger { display:none; background:none; border:none; font-size:22px; cursor:pointer; color:var(--text); padding:2px 6px; border-radius:6px; line-height:1; flex-shrink:0; }
+    @media(max-width:768px) { .hamburger { display:block; } }
+
+    .topbar-left { flex:1; min-width:0; }
+    .topbar-left h1 { font-family:'Bricolage Grotesque',sans-serif; font-size:19px; font-weight:800; letter-spacing:-.5px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .topbar-left p { font-size:12px; color:var(--muted); margin-top:1px; }
+    .topbar-right { display:flex; align-items:center; gap:8px; flex-shrink:0; flex-wrap:wrap; }
+
+    .filter-btn {
+      background:var(--bg); border:1.5px solid var(--border); border-radius:var(--rsm);
+      padding:7px 12px; font-size:13px; color:var(--muted); cursor:pointer;
+      transition:all .2s; font-family:inherit; font-weight:600;
+    }
+    .filter-btn:hover { border-color:var(--purple); color:var(--purple); background:var(--purple-soft); }
+
+    /* ── MAIN ── */
+    .main { flex:1; padding:22px 24px; display:flex; flex-direction:column; gap:18px; }
+
+    /* ── STUDENT HEADER ── */
+    .student-header {
+      background:var(--card); border-radius:var(--r); border:1.5px solid var(--border);
+      box-shadow:var(--sh-sm); padding:24px;
+      display:flex; align-items:flex-start; gap:20px; flex-wrap:wrap;
+    }
+    .student-avatar {
+      width:72px; height:72px; border-radius:50%;
+      background:linear-gradient(135deg,var(--purple),#A78BFA);
+      display:flex; align-items:center; justify-content:center;
+      font-size:28px; font-weight:800; color:#fff; flex-shrink:0;
+    }
+    .student-info { flex:1; min-width:200px; }
+    .student-name { font-family:'Bricolage Grotesque',sans-serif; font-size:22px; font-weight:800; margin-bottom:8px; }
+    .student-meta { display:flex; flex-wrap:wrap; gap:14px; font-size:13px; color:var(--muted); }
+    .student-meta-item { display:flex; align-items:center; gap:5px; }
+    .student-meta-val { font-weight:700; color:var(--text); }
+    .status-badge {
+      display:inline-flex; align-items:center; gap:6px;
+      background:#DCFCE7; border:1.5px solid var(--accent-green);
+      color:var(--accent-green); padding:5px 12px; border-radius:100px;
+      font-size:12px; font-weight:700; margin-top:12px;
+    }
+
+    /* ── TAB ROW ── */
+    .tab-row { display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px; }
+    .tab-row h2 { font-family:'Bricolage Grotesque',sans-serif; font-size:16px; font-weight:700; }
+    .tabs { display:flex; background:var(--bg); border-radius:var(--rsm); padding:4px; width:fit-content; }
+    .tab {
+      padding:8px 16px; border:none; background:transparent; border-radius:8px;
+      font-size:13px; font-weight:600; color:var(--muted); cursor:pointer; transition:all .2s;
+      font-family:inherit; white-space:nowrap;
+    }
+    .tab:hover { color:var(--purple); background:var(--purple-soft); }
+    .tab.active { background:#fff; color:var(--purple); box-shadow:0 2px 8px rgba(0,0,0,.08); }
+
+    /* ── STATS GRID ── */
+    .stats-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:14px; }
+    @media(max-width:600px) { .stats-grid { grid-template-columns:repeat(2,1fr); gap:10px; } }
+
+    .stat-card {
+      background:var(--card); border-radius:var(--r); border:1.5px solid var(--border);
+      box-shadow:var(--sh-sm); padding:18px; display:flex; flex-direction:column; gap:8px; transition:all .2s;
+    }
+    .stat-card:hover { box-shadow:var(--sh-md); transform:translateY(-2px); }
+    .stat-inner { display:flex; align-items:center; gap:10px; }
+    .stat-icon { width:40px; height:40px; border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:18px; flex-shrink:0; }
+    .stat-icon.green  { background:#DCFCE7; } .stat-icon.blue   { background:#E0F2FE; }
+    .stat-icon.amber  { background:#FEF3C7; } .stat-icon.purple { background:var(--purple-soft); }
+    .stat-label { font-size:11px; font-weight:600; color:var(--muted); text-transform:uppercase; }
+    .stat-val   { font-family:'Bricolage Grotesque',sans-serif; font-size:22px; font-weight:800; }
+    .stat-sub   { font-size:11px; color:var(--light); }
+
+    /* ── TAB CONTENT ── */
+    .tab-content { display:none; }
+    .tab-content.active { display:flex; flex-direction:column; gap:18px; }
+
+    /* ── DATA CARDS ── */
+    .data-card {
+      background:var(--card); border-radius:var(--r); border:1.5px solid var(--border);
+      box-shadow:var(--sh-sm); padding:24px;
+    }
+    .card-title { font-family:'Bricolage Grotesque',sans-serif; font-size:16px; font-weight:700; margin-bottom:18px; }
+
+    /* ── KEY FIX: each table gets its own horizontal scroll ── */
+    .table-wrap {
+      overflow-x:auto;
+      -webkit-overflow-scrolling:touch;
+    }
+    .table-wrap::-webkit-scrollbar { height:5px; }
+    .table-wrap::-webkit-scrollbar-thumb { background:var(--purple-mid); border-radius:20px; }
+
+    .data-table {
+      width:100%; border-collapse:collapse;
+      min-width:500px; /* triggers scroll before crushing columns */
+    }
+    .data-table thead { background:var(--purple-soft); border-bottom:2px solid var(--border); }
+    .data-table th {
+      padding:12px 16px; text-align:left; font-size:11px; font-weight:700;
+      color:var(--muted); text-transform:uppercase; letter-spacing:.6px; white-space:nowrap;
+    }
+    .data-table tbody tr { border-bottom:1px solid var(--border); transition:background .15s; }
+    .data-table tbody tr:hover { background:var(--purple-soft); }
+    .data-table tbody tr:last-child { border-bottom:none; }
+    .data-table td { padding:13px 16px; font-size:13px; color:var(--text); white-space:nowrap; }
+
+    /* Score colour classes */
+    .s-good { color:var(--accent-green); font-weight:700; }
+    .s-fair { color:var(--accent-amber); font-weight:700; }
+    .s-poor { color:var(--accent-coral); font-weight:700; }
+
+    /* Pill badges */
+    .pill { display:inline-block; padding:3px 9px; border-radius:6px; font-size:11px; font-weight:700; }
+    .pill-good { background:#DCFCE7; color:var(--accent-green); }
+    .pill-fair { background:#FEF3C7; color:var(--accent-amber); }
+    .pill-poor { background:#FEE2E2; color:var(--accent-coral); }
+
+    /* ── MOBILE TWEAKS ── */
+    @media(max-width:768px){
+      .topbar { padding:12px 16px; }
+      .topbar-left p { display:none; }
+      .main { padding:14px; gap:14px; }
+      .student-header { padding:16px; gap:14px; }
+      .student-avatar { width:56px; height:56px; font-size:22px; }
+      .student-name { font-size:18px; }
+      .data-card { padding:16px; }
+      .card-title { font-size:14px; }
+      .stat-val { font-size:20px; }
+    }
+    @media(max-width:480px){
+      .topbar-left h1 { font-size:14px; }
+      .student-meta { gap:8px; font-size:12px; }
+      .stat-sub { display:none; }
+      .tab-row { flex-direction:column; align-items:flex-start; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="overlay" id="overlay" onclick="closeSidebar()"></div>
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar" id="sidebar">
+    <div class="brand">
+      <div class="brand-icon"><svg viewBox="0 0 24 24" width="18" height="18" fill="white"><path d="M12 3L1 9l4 2.18v6L12 21l7-3.82v-6L23 9zm0 2.26L19.16 9 12 12.74 4.84 9zm5 9.26L12 18.74 7 14.52V12.5l5 2.74 5-2.74z"/></svg></div>
+      <div class="brand-name">Edu<span>Board</span></div>
+    </div>
+    <div class="nav-group">
+      <span class="nav-group-label">Main</span>
+      <a href="/teacher-dashboard" class="nav-item"><span>🏠</span> Dashboard</a>
+      <a href="/my-subject"        class="nav-item"><span>📚</span> My Subject</a>
+      <a href="/create-quiz"       class="nav-item"><span>🎯</span> Create Quiz</a>
+      <a href="/students"          class="nav-item active"><span>👥</span> Student Records</a>
+    </div>
+    <div class="sidebar-user">
+      <div class="su-avatar">{{ user.initials }}</div>
+      <div class="su-info">
+        <div class="su-name">{{ user.full_name }}</div>
+        <div class="su-role">Teacher</div>
+      </div>
+      <a href="/logout" class="su-logout">⏻</a>
+    </div>
+  </aside>
+
+  <!-- PAGE -->
+  <div class="page-wrap">
+    <div class="topbar">
+      <button class="hamburger" onclick="openSidebar()" aria-label="Menu">☰</button>
+      <div class="topbar-left">
+        <h1>👥 Student Records &amp; Health Data</h1>
+        <p>{{ now }} · {{ students|length }} students registered</p>
+      </div>
+      <div class="topbar-right">
+        <select class="filter-btn" id="class-filter">
+          <option value="">All Classes</option>
+          <option value="10A">Class 10-A</option>
+          <option value="10B">Class 10-B</option>
+          <option value="11A">Class 11-A</option>
+          <option value="12A">Class 12-A</option>
+        </select>
+        <select class="filter-btn" id="sort-filter">
+          <option value="name">By Name</option>
+          <option value="score">By Score</option>
+          <option value="health">By Health</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="main">
+
+      <!-- STUDENT PROFILE CARD — shows first student or summary -->
+      <div class="student-header">
+        <div class="student-avatar" id="profile-avatar">👥</div>
+        <div class="student-info">
+          <div class="student-name" id="profile-name">All Students</div>
+          <div class="student-meta">
+            <div class="student-meta-item"><span>👥 Total:</span><span class="student-meta-val">{{ students|length }} students</span></div>
+            <div class="student-meta-item"><span>📋 Total Quizzes:</span><span class="student-meta-val" id="profile-quizzes">{{ students|sum(attribute='quizzes') }}</span></div>
+            <div class="student-meta-item"><span>📈 Avg Score:</span><span class="student-meta-val" id="profile-avg">
+              {% if students %}{{ (students|sum(attribute='avg') / students|length)|round(1) }}%{% else %}—{% endif %}
+            </span></div>
+          </div>
+          <div><span class="status-badge">✓ Active</span></div>
+        </div>
+      </div>
+
+      <!-- SECTION HEADER + TABS -->
+      <div class="tab-row">
+        <h2>📊 Student Records</h2>
+        <div class="tabs" id="view-tabs">
+          <button class="tab active" data-tab="all">All Students</button>
+          <button class="tab" data-tab="health">Health Focus</button>
+        </div>
+      </div>
+
+      <!-- STAT CARDS -->
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-inner"><div class="stat-icon green">👥</div>
+            <div><div class="stat-label">Total Students</div><div class="stat-val">{{ students|length }}</div></div>
+          </div><div class="stat-sub">Registered students</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-inner"><div class="stat-icon blue">📋</div>
+            <div><div class="stat-label">Total Quizzes</div><div class="stat-val">{{ students|sum(attribute='quizzes') }}</div></div>
+          </div><div class="stat-sub">Combined attempts</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-inner"><div class="stat-icon amber">📈</div>
+            <div><div class="stat-label">Avg Score</div><div class="stat-val">
+              {% if students %}{{ (students|sum(attribute='avg') / students|length)|round(1) }}%{% else %}—{% endif %}
+            </div></div>
+          </div><div class="stat-sub">Across all students</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-inner"><div class="stat-icon green">🏆</div>
+            <div><div class="stat-label">Top Score</div><div class="stat-val">
+              {% if students %}{{ students|max(attribute='best')|attr('best') }}%{% else %}—{% endif %}
+            </div></div>
+          </div><div class="stat-sub">Best individual score</div>
+        </div>
+      </div>
+
+      <!-- TAB: All Students -->
+      <div id="tab-all" class="tab-content active">
+
+        <div class="data-card">
+          <div class="card-title">📚 Student Academic Records</div>
+          <div class="table-wrap">
+            <table class="data-table">
+              <thead><tr>
+                <th>Student</th><th>Grade</th><th>Section</th>
+                <th>Quizzes</th><th>Avg Score</th><th>Best Score</th>
+                <th>Joined</th><th>Status</th>
+              </tr></thead>
+              <tbody>
+                {% if students %}
+                  {% for s in students %}
+                  <tr>
+                    <td>
+                      <div style="display:flex;align-items:center;gap:10px">
+                        <div style="width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#7C3AED,#A78BFA);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:white;flex-shrink:0">{{ s.initials }}</div>
+                        <div>
+                          <div style="font-weight:600;font-size:13px">{{ s.name }}</div>
+                          <div style="font-size:11px;color:var(--muted)">{{ s.email }}</div>
+                        </div>
+                      </div>
+                    </td>
+                    <td>{{ s.grade }}</td>
+                    <td>{{ s.section }}</td>
+                    <td>{{ s.quizzes }}</td>
+                    <td><span class="{% if s.avg >= 70 %}s-good{% elif s.avg >= 50 %}s-fair{% else %}s-poor{% endif %}">{{ s.avg }}%</span></td>
+                    <td><span class="{% if s.best >= 70 %}s-good{% elif s.best >= 50 %}s-fair{% else %}s-poor{% endif %}">{{ s.best }}%</span></td>
+                    <td>{{ s.joined }}</td>
+                    <td><span class="pill {% if s.quizzes > 0 %}pill-good{% else %}pill-fair{% endif %}">{% if s.quizzes > 0 %}Active{% else %}New{% endif %}</span></td>
+                  </tr>
+                  {% endfor %}
+                {% else %}
+                <tr><td colspan="8" style="text-align:center;padding:32px;color:var(--muted)">No students registered yet.</td></tr>
+                {% endif %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </div><!-- /tab-all -->
+
+      <!-- TAB: Health Focus -->
+      <div id="tab-health" class="tab-content">
+        <div class="data-card">
+          <div class="card-title">❤️ Health-Focused Student Monitoring</div>
+          <div class="table-wrap">
+            <table class="data-table">
+              <thead><tr>
+                <th>Student Name</th><th>Grade</th><th>Quizzes</th>
+                <th>Avg Score</th><th>Wellness</th><th>Status</th>
+              </tr></thead>
+              <tbody id="health-tbody">
+                {% if students %}
+                  {% for s in students %}
+                  <tr>
+                    <td><strong>{{ s.name }}</strong></td>
+                    <td>{{ s.grade }}</td>
+                    <td>{{ s.quizzes }}</td>
+                    <td><span class="{% if s.avg >= 70 %}s-good{% elif s.avg >= 50 %}s-fair{% else %}s-poor{% endif %}">{{ s.avg }}%</span></td>
+                    <td><span class="pill pill-good">N/A</span></td>
+                    <td><span class="pill {% if s.quizzes > 0 %}pill-good{% else %}pill-fair{% endif %}">{% if s.quizzes > 0 %}Active{% else %}New{% endif %}</span></td>
+                  </tr>
+                  {% endfor %}
+                {% else %}
+                <tr><td colspan="6" style="text-align:center;padding:32px;color:var(--muted)">No students yet.</td></tr>
+                {% endif %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div><!-- /tab-health -->
+
+    </div><!-- /main -->
+  </div><!-- /page-wrap -->
+
+  <script>
+    // Tab switching
+    document.querySelectorAll('#view-tabs .tab').forEach(tab=>{
+      tab.addEventListener('click',function(){
+        document.querySelectorAll('.tab-content').forEach(c=>c.classList.remove('active'));
+        document.querySelectorAll('#view-tabs .tab').forEach(t=>t.classList.remove('active'));
+        document.getElementById('tab-'+this.dataset.tab).classList.add('active');
+        this.classList.add('active');
+      });
+    });
+
+    // Sidebar
+    function openSidebar()  { document.getElementById('sidebar').classList.add('open');    document.getElementById('overlay').classList.add('show'); }
+    function closeSidebar() { document.getElementById('sidebar').classList.remove('open'); document.getElementById('overlay').classList.remove('show'); }
+
+    // Filter stubs — wire up to your Flask API
+    document.getElementById('clas

@@ -1,0 +1,839 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EduBoard – Code Quiz</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Bricolage+Grotesque:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --blue-vivid:#7C3AED;--blue-soft:#F5F3FF;--blue-mid:#DDD6FE;--blue-dark:#4C1D95;
+  --accent-coral:#FF5C3A;--accent-green:#1DBF73;--accent-amber:#F59E0B;
+  --bg:#FAF8FF;--card:#FFFFFF;--sidebar:#FFFFFF;
+  --text-primary:#1E1030;--text-muted:#6B6B8A;--text-light:#C4B8E8;
+  --border:#EDE9F8;
+  --shadow-sm:0 1px 4px rgba(124,58,237,0.06);
+  --shadow-md:0 4px 20px rgba(124,58,237,0.10);
+  --shadow-lg:0 8px 40px rgba(124,58,237,0.14);
+  --radius:14px;--radius-sm:9px;
+}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(--text-primary);min-height:100vh;display:flex;overflow-x:hidden}
+a{text-decoration:none;color:inherit}
+
+/* SIDEBAR */
+.sidebar{width:218px;min-height:100vh;background:var(--sidebar);border-right:1.5px solid var(--border);display:flex;flex-direction:column;padding:28px 16px 0;flex-shrink:0;position:sticky;top:0;height:100vh}
+.brand{display:flex;align-items:center;gap:10px;padding:0 6px 28px}
+.brand-icon{width:34px;height:34px;background:var(--blue-vivid);border-radius:10px;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 14px rgba(124,58,237,0.35)}
+.brand-icon svg{width:18px;height:18px;fill:white}
+.brand-name{font-family:'Bricolage Grotesque',sans-serif;font-size:17px;font-weight:800;color:var(--text-primary);letter-spacing:-0.5px}
+.brand-name span{color:var(--blue-vivid)}
+.nav-group{margin-bottom:6px}
+.nav-group-label{font-size:10px;font-weight:700;color:var(--text-light);text-transform:uppercase;letter-spacing:1.2px;padding:0 8px 8px;display:block}
+.nav-item{display:flex;align-items:center;gap:11px;padding:10px 12px;border-radius:var(--radius-sm);font-size:13.5px;font-weight:500;color:var(--text-muted);cursor:pointer;transition:all .18s;margin-bottom:2px;user-select:none}
+.nav-item:hover{background:var(--blue-soft);color:var(--blue-vivid);transform:translateX(2px)}
+.nav-item.active{background:var(--blue-vivid);color:white;font-weight:600;box-shadow:0 4px 16px rgba(124,58,237,0.30)}
+.nav-item.active:hover{transform:none}
+.nav-pill{margin-left:auto;font-size:10px;font-weight:700;background:rgba(255,255,255,0.25);padding:2px 7px;border-radius:20px;color:white}
+.nav-pill-blue{margin-left:auto;font-size:10px;font-weight:700;background:var(--blue-soft);color:var(--blue-vivid);padding:2px 7px;border-radius:20px}
+.sidebar-spacer{flex:1}
+.sidebar-bottom{padding:16px 0 0;border-top:1.5px solid var(--border);margin-bottom:0}
+.sidebar-user{display:flex;align-items:center;gap:10px;padding:12px;background:var(--blue-soft);border-radius:var(--radius-sm)}
+.su-avatar{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,var(--blue-vivid),#A78BFA);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;color:white;flex-shrink:0}
+.su-info{flex:1;min-width:0}
+.su-name{font-size:13px;font-weight:700;color:var(--text-primary)}
+.su-role{font-size:11px;color:var(--text-muted)}
+.logout-btn{display:flex;align-items:center;gap:9px;padding:11px 12px;border-radius:var(--radius-sm);font-size:13px;font-weight:600;color:var(--accent-coral);cursor:pointer;transition:all .18s;margin-top:6px;margin-bottom:20px;border:1.5px solid transparent;background:transparent;width:100%;font-family:inherit}
+.logout-btn:hover{background:#FFF1EF;border-color:#FECACA;transform:translateX(2px)}
+
+/* CONTENT */
+.content{flex:1;display:flex;flex-direction:column;min-width:0;overflow-x:hidden}
+
+/* TOPBAR */
+.topbar{background:var(--card);border-bottom:1.5px solid var(--border);padding:14px 28px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;position:sticky;top:0;z-index:100}
+.topbar-left h1{font-family:'Bricolage Grotesque',sans-serif;font-size:19px;font-weight:800;letter-spacing:-0.5px}
+.topbar-left p{font-size:12px;color:var(--text-muted);margin-top:1px}
+.topbar-right{display:flex;align-items:center;gap:10px}
+.topbar-badge{display:inline-flex;align-items:center;gap:6px;background:var(--blue-soft);border:1.5px solid var(--blue-mid);border-radius:100px;padding:5px 12px;font-size:12px;font-weight:700;color:var(--blue-vivid)}
+.diff-pill{padding:5px 12px;border-radius:100px;font-size:12px;font-weight:700;border:1.5px solid}
+.diff-pill.Easy{background:#F0FDF4;border-color:#BBF7D0;color:#15803D}
+.diff-pill.Medium{background:#FFFBEB;border-color:#FDE68A;color:#B45309}
+.diff-pill.Hard{background:#FEF2F2;border-color:#FECACA;color:#B91C1C}
+
+/* PAGE BODY */
+.page-body{flex:1;overflow-y:auto;padding:24px 28px 48px}
+.page-body::-webkit-scrollbar{width:5px}
+.page-body::-webkit-scrollbar-thumb{background:var(--blue-mid);border-radius:20px}
+
+/* SCREENS */
+.screen{display:none}
+.screen.active{display:block}
+
+/* ANIMATIONS */
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+@keyframes fadeDown{from{opacity:0;transform:translateY(-10px)}to{opacity:1;transform:translateY(0)}}
+@keyframes pop{from{opacity:0;transform:scale(.4)}to{opacity:1;transform:scale(1)}}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+
+/* ═══ SELECT SCREEN ═══ */
+.hero{text-align:center;padding:32px 0 28px;animation:fadeUp .5s ease both}
+.hero-eyebrow{display:inline-flex;align-items:center;gap:8px;background:var(--blue-soft);border:1.5px solid var(--blue-mid);border-radius:100px;padding:6px 16px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--blue-vivid);margin-bottom:14px}
+.hero h1{font-family:'Bricolage Grotesque',sans-serif;font-size:clamp(26px,4vw,38px);font-weight:800;letter-spacing:-1.5px;line-height:1.1;margin-bottom:10px}
+.hero h1 span{color:var(--blue-vivid)}
+.hero p{font-size:14px;color:var(--text-muted);max-width:400px;margin:0 auto;line-height:1.7}
+.section-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:2px;color:var(--text-muted);margin-bottom:12px;padding-left:2px}
+
+.subject-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:28px}
+@media(max-width:720px){.subject-grid{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:460px){.subject-grid{grid-template-columns:repeat(2,1fr)}}
+.subject-card{background:var(--card);border:1.5px solid var(--border);border-radius:var(--radius);padding:20px 14px 16px;cursor:pointer;transition:all .22s;text-align:center;position:relative;overflow:hidden;box-shadow:var(--shadow-sm)}
+.subject-card::before{content:'';position:absolute;top:0;right:0;width:60px;height:60px;border-radius:50%;background:var(--accent,var(--blue-vivid));opacity:.06;transform:translate(18px,-18px);transition:all .3s}
+.subject-card:hover{border-color:var(--accent,var(--blue-vivid));box-shadow:var(--shadow-md);transform:translateY(-3px)}
+.subject-card:hover::before{opacity:.12;transform:translate(10px,-10px) scale(1.3)}
+.subject-card.selected{border-color:var(--accent,var(--blue-vivid));background:var(--blue-soft);box-shadow:0 0 0 4px rgba(124,58,237,0.08)}
+.sc-emoji{font-size:28px;margin-bottom:10px;display:block}
+.sc-name{font-family:'Bricolage Grotesque',sans-serif;font-size:14px;font-weight:700;color:var(--text-primary)}
+.sc-check{position:absolute;top:10px;right:10px;width:20px;height:20px;border-radius:50%;background:var(--accent,var(--blue-vivid));color:white;font-size:10px;font-weight:800;display:flex;align-items:center;justify-content:center;opacity:0;transform:scale(.4);transition:all .2s}
+.subject-card.selected .sc-check{opacity:1;transform:scale(1)}
+
+.difficulty-row{display:flex;gap:10px;margin-bottom:28px}
+.diff-card{flex:1;background:var(--card);border:1.5px solid var(--border);border-radius:var(--radius-sm);padding:14px 16px;cursor:pointer;transition:all .2s;display:flex;align-items:center;gap:12px;box-shadow:var(--shadow-sm)}
+.diff-card:hover{border-color:var(--dc);box-shadow:var(--shadow-md)}
+.diff-card.selected{border-color:var(--dc);background:color-mix(in srgb,var(--dc) 7%,white)}
+.diff-icon-wrap{width:38px;height:38px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:18px;background:color-mix(in srgb,var(--dc) 12%,white);flex-shrink:0}
+.diff-name{font-weight:700;font-size:13.5px;color:var(--text-primary);margin-bottom:2px}
+.diff-desc{font-size:11px;color:var(--text-muted)}
+.diff-radio{margin-left:auto;width:16px;height:16px;border-radius:50%;border:2px solid var(--border);display:flex;align-items:center;justify-content:center;transition:all .2s;flex-shrink:0}
+.diff-card.selected .diff-radio{border-color:var(--dc);background:var(--dc)}
+.diff-card.selected .diff-radio::after{content:'';width:6px;height:6px;border-radius:50%;background:white}
+
+.count-row{display:flex;gap:8px;margin-bottom:28px;flex-wrap:wrap}
+.count-btn{padding:8px 20px;border:1.5px solid var(--border);border-radius:100px;background:var(--card);font-size:13px;font-weight:700;color:var(--text-muted);cursor:pointer;transition:all .2s;font-family:inherit}
+.count-btn:hover{border-color:var(--blue-vivid);color:var(--blue-vivid)}
+.count-btn.selected{background:var(--blue-vivid);border-color:var(--blue-vivid);color:white;box-shadow:0 4px 12px rgba(124,58,237,0.25)}
+
+.summary-bar{background:var(--card);border:1.5px solid var(--border);border-radius:var(--radius);padding:18px 22px;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;box-shadow:var(--shadow-sm)}
+.summary-item{display:flex;flex-direction:column;gap:2px}
+.summary-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--text-muted)}
+.summary-value{font-family:'Bricolage Grotesque',sans-serif;font-size:17px;font-weight:700;color:var(--text-primary)}
+.start-btn{background:linear-gradient(135deg,var(--blue-vivid),#A855F7);color:white;border:none;border-radius:var(--radius-sm);padding:13px 28px;font-family:'Bricolage Grotesque',sans-serif;font-size:14px;font-weight:800;cursor:pointer;transition:all .2s;white-space:nowrap;box-shadow:0 6px 20px rgba(124,58,237,0.30);letter-spacing:-.3px}
+.start-btn:hover:not(:disabled){transform:translateY(-2px);box-shadow:0 10px 28px rgba(124,58,237,0.40)}
+.start-btn:disabled{background:var(--border);color:var(--text-muted);cursor:not-allowed;box-shadow:none;transform:none}
+
+/* ═══ QUIZ SCREEN ═══ */
+.quiz-layout{max-width:720px;margin:0 auto}
+
+.progress-wrap{margin-bottom:20px;animation:fadeUp .4s ease both}
+.progress-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.prog-label{font-size:12px;font-weight:600;color:var(--text-muted)}
+.prog-count{font-family:'Bricolage Grotesque',sans-serif;font-size:13px;font-weight:700;color:var(--text-primary)}
+.progress-track{height:6px;background:var(--border);border-radius:6px}
+.progress-fill{height:100%;border-radius:6px;background:linear-gradient(90deg,var(--blue-vivid),#A855F7);transition:width .4s ease}
+
+.stats-row{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px;animation:fadeUp .4s .05s ease both;opacity:0;animation-fill-mode:both}
+.stat-mini{background:var(--card);border:1.5px solid var(--border);border-radius:var(--radius-sm);padding:12px 14px;display:flex;align-items:center;gap:10px;box-shadow:var(--shadow-sm)}
+.stat-mini-icon{font-size:18px;flex-shrink:0}
+.stat-mini-val{font-family:'Bricolage Grotesque',sans-serif;font-size:19px;font-weight:800;line-height:1}
+.stat-mini-label{font-size:10px;color:var(--text-muted);font-weight:600;text-transform:uppercase;letter-spacing:.5px;margin-top:1px}
+#timer-val.warn{color:var(--accent-coral);animation:pulse .7s infinite}
+
+.q-card{background:var(--card);border:1.5px solid var(--border);border-radius:var(--radius);padding:28px;margin-bottom:12px;box-shadow:var(--shadow-sm);animation:fadeUp .3s ease both;opacity:0;animation-fill-mode:both}
+.q-eyebrow{margin-bottom:14px}
+.q-num-pill{display:inline-flex;background:var(--blue-soft);color:var(--blue-vivid);font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;border:1px solid var(--blue-mid)}
+.q-text{font-size:17px;font-weight:600;line-height:1.55;color:var(--text-primary)}
+.q-code{font-family:monospace;font-size:12.5px;background:var(--bg);border:1.5px solid var(--border);border-radius:var(--radius-sm);padding:14px 16px;margin-top:14px;line-height:1.8;color:#5B21B6;white-space:pre;overflow-x:auto}
+
+.options-grid{display:flex;flex-direction:column;gap:8px;margin-bottom:12px;animation:fadeUp .3s .07s ease both;opacity:0;animation-fill-mode:both}
+.opt-btn{background:var(--card);border:1.5px solid var(--border);border-radius:var(--radius-sm);padding:13px 16px;cursor:pointer;display:flex;align-items:center;gap:13px;transition:all .18s;font-family:'Plus Jakarta Sans',sans-serif;text-align:left;width:100%;box-shadow:var(--shadow-sm)}
+.opt-btn:hover:not(.answered){border-color:var(--blue-vivid);background:var(--blue-soft);box-shadow:var(--shadow-md)}
+.opt-letter{width:28px;height:28px;border-radius:7px;background:var(--bg);border:1.5px solid var(--border);display:flex;align-items:center;justify-content:center;font-family:'Bricolage Grotesque',sans-serif;font-size:12px;font-weight:700;color:var(--text-muted);flex-shrink:0;transition:all .18s}
+.opt-text{font-size:13.5px;font-weight:500;color:var(--text-primary)}
+.opt-btn.correct{border-color:var(--accent-green)!important;background:#F0FDF4!important}
+.opt-btn.correct .opt-letter{background:var(--accent-green);border-color:var(--accent-green);color:white}
+.opt-btn.wrong{border-color:var(--accent-coral)!important;background:#FFF1EF!important}
+.opt-btn.wrong .opt-letter{background:var(--accent-coral);border-color:var(--accent-coral);color:white}
+.opt-btn.dim{opacity:.35}
+
+.feedback-bar{border-radius:var(--radius-sm);padding:13px 16px;font-size:13px;line-height:1.65;display:none;margin-bottom:12px;border:1.5px solid}
+.feedback-bar.show{display:block;animation:fadeUp .2s ease both}
+.feedback-bar.correct{background:#F0FDF4;border-color:#BBF7D0}
+.feedback-bar.wrong{background:#FFF1EF;border-color:#FECACA}
+.feedback-bar.timeout{background:var(--blue-soft);border-color:var(--blue-mid)}
+.fb-title{font-weight:700;font-size:13px;margin-bottom:4px}
+.fb-title.ok{color:#15803D}
+.fb-title.no{color:var(--accent-coral)}
+.fb-title.to{color:var(--blue-vivid)}
+.fb-exp{color:var(--text-muted)}
+
+.next-btn{width:100%;background:linear-gradient(135deg,var(--blue-vivid),#A855F7);color:white;border:none;border-radius:var(--radius-sm);padding:13px;font-family:'Bricolage Grotesque',sans-serif;font-size:14px;font-weight:800;cursor:pointer;transition:all .2s;display:none;box-shadow:0 4px 16px rgba(124,58,237,0.25)}
+.next-btn.show{display:block;animation:fadeUp .2s ease both}
+.next-btn:hover{transform:translateY(-1px);box-shadow:0 8px 24px rgba(124,58,237,0.35)}
+
+/* ═══ RESULT SCREEN ═══ */
+.result-layout{max-width:620px;margin:0 auto}
+
+.result-hero{text-align:center;padding:8px 0 24px;animation:fadeUp .5s ease both}
+.result-emoji{font-size:52px;margin-bottom:12px;display:inline-block;animation:pop .5s .2s ease both;opacity:0;animation-fill-mode:both}
+.result-pct{font-family:'Bricolage Grotesque',sans-serif;font-size:56px;font-weight:800;letter-spacing:-3px;line-height:1}
+.result-sub-text{font-size:13px;color:var(--text-muted);margin-top:6px}
+
+.result-stat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px;animation:fadeUp .5s .1s ease both;opacity:0;animation-fill-mode:both}
+.rs-card{background:var(--card);border:1.5px solid var(--border);border-radius:var(--radius);padding:16px;text-align:center;box-shadow:var(--shadow-sm)}
+.rs-val{font-family:'Bricolage Grotesque',sans-serif;font-size:24px;font-weight:800;margin-bottom:3px}
+.rs-lbl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--text-muted)}
+
+.review-card{background:var(--card);border:1.5px solid var(--border);border-radius:var(--radius);padding:20px 22px;margin-bottom:16px;box-shadow:var(--shadow-sm);animation:fadeUp .5s .15s ease both;opacity:0;animation-fill-mode:both}
+.review-header{font-family:'Bricolage Grotesque',sans-serif;font-size:14px;font-weight:700;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between}
+.review-header span:last-child{font-size:12px;color:var(--text-muted);font-family:'Plus Jakarta Sans',sans-serif;font-weight:500}
+.review-scroll{max-height:260px;overflow-y:auto}
+.review-scroll::-webkit-scrollbar{width:4px}
+.review-scroll::-webkit-scrollbar-thumb{background:var(--blue-mid);border-radius:10px}
+.review-item{display:flex;align-items:flex-start;gap:10px;padding:10px 0;border-bottom:1px solid var(--border)}
+.review-item:last-child{border-bottom:none}
+.ri-dot{width:20px;height:20px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;margin-top:2px}
+.ri-dot.ok{background:#DCFCE7;color:#15803D}
+.ri-dot.no{background:#FEE2E2;color:#B91C1C}
+.ri-q{font-size:12.5px;font-weight:600;color:var(--text-primary);margin-bottom:3px;line-height:1.4}
+.ri-ans{font-size:11px;color:var(--text-muted)}
+
+.result-actions{display:flex;gap:10px;animation:fadeUp .5s .2s ease both;opacity:0;animation-fill-mode:both}
+.btn-outline{flex:1;padding:13px;border-radius:var(--radius-sm);font-family:'Bricolage Grotesque',sans-serif;font-size:13px;font-weight:800;cursor:pointer;transition:all .2s;border:1.5px solid var(--border);background:var(--card);color:var(--text-primary);box-shadow:var(--shadow-sm)}
+.btn-outline:hover{border-color:var(--blue-vivid);background:var(--blue-soft);color:var(--blue-vivid)}
+.btn-filled{flex:1;padding:13px;border-radius:var(--radius-sm);font-family:'Bricolage Grotesque',sans-serif;font-size:13px;font-weight:800;cursor:pointer;transition:all .2s;background:linear-gradient(135deg,var(--blue-vivid),#A855F7);border:none;color:white;box-shadow:0 4px 16px rgba(124,58,237,0.25)}
+.btn-filled:hover{transform:translateY(-1px);box-shadow:0 8px 24px rgba(124,58,237,0.35)}
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="brand">
+    <div class="brand-icon"><svg viewBox="0 0 24 24"><path d="M12 3L1 9l4 2.18v6L12 21l7-3.82v-6L23 9zm0 2.26L19.16 9 12 12.74 4.84 9zm5 9.26L12 18.74 7 14.52V12.5l5 2.74 5-2.74z"/></svg></div>
+    <div class="brand-name">Edu<span>Board</span></div>
+  </div>
+  <div class="nav-group">
+    <span class="nav-group-label">Main</span>
+    <a class="nav-item" href="/dashboard"><span>🏠</span> Dashboard</a>
+    <a class="nav-item" href="/analytics"><span>📊</span> Analytics <span class="nav-pill-blue">NEW</span></a>
+    <a class="nav-item active" href="/quiz"><span>📋</span> Quiz <span class="nav-pill">Live</span></a>
+    <a class="nav-item" href="/leaderboard"><span>🏆</span> Leaderboard</a>
+    <a class="nav-item" href="/marks-analyzer"><span>📊</span> Marks Analyzer</a>
+
+    <a class="nav-item" href="/health"><span>❤️</span> Health</a>
+  </div>
+  <div class="sidebar-spacer"></div>
+  <div class="sidebar-bottom">
+    <div class="sidebar-user">
+      <div class="su-avatar">{{ user.initials }}</div>
+      <div class="su-info">
+        <div class="su-name">{{ user.first_name }}</div>
+        <div class="su-role">{{ user.role }}</div>
+      </div>
+    </div>
+    <button class="logout-btn"><span style="font-size:16px">⏻</span> Logout</button>
+  </div>
+</aside>
+
+<!-- CONTENT -->
+<div class="content">
+  <div class="topbar">
+    <div class="topbar-left">
+      <h1 id="topbar-title">Quiz Hub</h1>
+      <p id="topbar-sub">Hi 👋 — Pick a language and start a fresh quiz</p>
+    </div>
+    <div class="topbar-right" id="topbar-right">
+      <div class="topbar-badge">✨ Code Quiz</div>
+    </div>
+  </div>
+
+  <div class="page-body">
+
+    <!-- ── SELECT ── -->
+    <div id="screen-select" class="screen active">
+      <div class="hero">
+        <div class="hero-eyebrow">✨ 5 Languages · 3 Levels</div>
+        <h1>Choose Your <span>Quiz</span></h1>
+        <p>Unique questions every time. No two quizzes are the same.</p>
+      </div>
+
+      <div class="section-label">📚 Select Language</div>
+      <div class="subject-grid">
+        <div class="subject-card" style="--accent:#7C3AED" onclick="selectSubj(this,'Python','🐍','#7C3AED')">
+          <span class="sc-emoji">🐍</span><div class="sc-name">Python</div><div class="sc-check">✓</div>
+        </div>
+        <div class="subject-card" style="--accent:#F59E0B" onclick="selectSubj(this,'Java','☕','#F59E0B')">
+          <span class="sc-emoji">☕</span><div class="sc-name">Java</div><div class="sc-check">✓</div>
+        </div>
+        <div class="subject-card" style="--accent:#1DBF73" onclick="selectSubj(this,'C','⚙️','#1DBF73')">
+          <span class="sc-emoji">⚙️</span><div class="sc-name">C</div><div class="sc-check">✓</div>
+        </div>
+        <div class="subject-card" style="--accent:#FF5C3A" onclick="selectSubj(this,'Swift','🦅','#FF5C3A')">
+          <span class="sc-emoji">🦅</span><div class="sc-name">Swift</div><div class="sc-check">✓</div>
+        </div>
+        <div class="subject-card" style="--accent:#EC4899" onclick="selectSubj(this,'R','📊','#EC4899')">
+          <span class="sc-emoji">📊</span><div class="sc-name">R</div><div class="sc-check">✓</div>
+        </div>
+      </div>
+
+      {% if teacher_quizzes %}
+      <div class="section-label" style="margin-top:4px">📋 Teacher Assigned Quizzes</div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:12px;margin-bottom:4px">
+        {% for tq in teacher_quizzes %}
+        <div class="subject-card" style="--accent:#7C3AED;text-align:left;padding:16px;position:relative"
+             onclick="selectTeacherQuiz(this,{{ tq.id }},'{{ tq.name|e }}','{{ tq.subject|e }}','{{ tq.difficulty }}',{{ tq.questions }})">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+            <span style="font-size:18px">📋</span>
+            <span style="font-size:10px;font-weight:700;background:#EDE9F8;color:#7C3AED;padding:2px 8px;border-radius:20px">{{ tq.difficulty }}</span>
+          </div>
+          <div style="font-weight:700;font-size:13px;margin-bottom:3px">{{ tq.name }}</div>
+          <div style="font-size:11px;color:var(--text-muted)">{{ tq.subject }} · {{ tq.questions }}Q · {{ tq.duration }}min</div>
+          <div style="font-size:10px;color:var(--text-muted);margin-top:3px">by {{ tq.teacher }}</div>
+          <div class="sc-check">✓</div>
+        </div>
+        {% endfor %}
+      </div>
+      {% endif %}
+
+            <div class="section-label">⚡ Difficulty Level</div>
+      <div class="difficulty-row">
+        <div class="diff-card selected" style="--dc:#1DBF73" onclick="selectDiff(this,'Easy')">
+          <div class="diff-icon-wrap">🌱</div>
+          <div><div class="diff-name">Easy</div><div class="diff-desc">Core concepts · 30s</div></div>
+          <div class="diff-radio"></div>
+        </div>
+        <div class="diff-card" style="--dc:#F59E0B" onclick="selectDiff(this,'Medium')">
+          <div class="diff-icon-wrap">🔥</div>
+          <div><div class="diff-name">Medium</div><div class="diff-desc">Real challenges · 20s</div></div>
+          <div class="diff-radio"></div>
+        </div>
+        <div class="diff-card" style="--dc:#FF5C3A" onclick="selectDiff(this,'Hard')">
+          <div class="diff-icon-wrap">💀</div>
+          <div><div class="diff-name">Hard</div><div class="diff-desc">Expert level · 15s</div></div>
+          <div class="diff-radio"></div>
+        </div>
+      </div>
+
+      <div class="section-label">🔢 Number of Questions</div>
+      <div class="count-row">
+        <div class="count-btn" onclick="selectCount(this,5)">5 Questions</div>
+        <div class="count-btn selected" onclick="selectCount(this,10)">10 Questions</div>
+        <div class="count-btn" onclick="selectCount(this,15)">15 Questions</div>
+        <div class="count-btn" onclick="selectCount(this,20)">20 Questions</div>
+      </div>
+
+      <div class="summary-bar">
+        <div class="summary-item"><div class="summary-label">Language</div><div class="summary-value" id="sum-lang">— Not selected</div></div>
+        <div class="summary-item"><div class="summary-label">Difficulty</div><div class="summary-value" id="sum-diff">Easy 🌱</div></div>
+        <div class="summary-item"><div class="summary-label">Questions</div><div class="summary-value" id="sum-count">10</div></div>
+        <button class="start-btn" id="start-btn" disabled>Start Quiz →</button>
+      </div>
+    </div>
+
+    <!-- ── QUIZ ── -->
+    <div id="screen-quiz" class="screen">
+      <div class="quiz-layout">
+        <div class="progress-wrap">
+          <div class="progress-top">
+            <span class="prog-label" id="prog-label">Question 1 of 10</span>
+            <span class="prog-count" id="prog-count">0 / 10 correct</span>
+          </div>
+          <div class="progress-track"><div class="progress-fill" id="progress-fill" style="width:0%"></div></div>
+        </div>
+
+        <div class="stats-row">
+          <div class="stat-mini">
+            <span class="stat-mini-icon">⏱</span>
+            <div><div class="stat-mini-val" id="timer-val">30</div><div class="stat-mini-label">Seconds</div></div>
+          </div>
+          <div class="stat-mini">
+            <span class="stat-mini-icon">🎯</span>
+            <div><div class="stat-mini-val" id="streak-val">0</div><div class="stat-mini-label">Streak</div></div>
+          </div>
+          <div class="stat-mini">
+            <span class="stat-mini-icon" id="diff-icon">🌱</span>
+            <div><div class="stat-mini-val" id="diff-val">Easy</div><div class="stat-mini-label">Level</div></div>
+          </div>
+        </div>
+
+        <div class="q-card">
+          <div class="q-eyebrow"><span class="q-num-pill" id="q-num-pill">Q1</span></div>
+          <div class="q-text" id="q-text">Loading…</div>
+          <div class="q-code" id="q-code" style="display:none"></div>
+        </div>
+
+        <div class="options-grid" id="options-grid"></div>
+
+        <div class="feedback-bar" id="feedback-bar">
+          <div class="fb-title" id="fb-title"></div>
+          <div class="fb-exp" id="fb-exp"></div>
+        </div>
+
+        <button class="next-btn" id="next-btn" onclick="nextQuestion()">Next Question →</button>
+      </div>
+    </div>
+
+    <!-- ── RESULT ── -->
+    <div id="screen-result" class="screen">
+      <div class="result-layout">
+        <div class="result-hero">
+          <div class="result-emoji" id="result-emoji">🏆</div>
+          <div class="result-pct" id="result-pct">—</div>
+          <div class="result-sub-text" id="result-sub">…</div>
+        </div>
+
+        <div class="result-stat-grid">
+          <div class="rs-card"><div class="rs-val" id="rs-score">—</div><div class="rs-lbl">Score</div></div>
+          <div class="rs-card"><div class="rs-val" id="rs-time">—</div><div class="rs-lbl">Avg Time</div></div>
+          <div class="rs-card"><div class="rs-val" id="rs-streak">—</div><div class="rs-lbl">Best Streak</div></div>
+        </div>
+
+        <div class="review-card">
+          <div class="review-header">
+            <span>📋 Answer Review</span>
+            <span id="review-summary"></span>
+          </div>
+          <div class="review-scroll" id="review-list"></div>
+        </div>
+
+        <div class="result-actions">
+          <button class="btn-outline" onclick="retryQuiz()">↩ Retry Same</button>
+          <button class="btn-filled" onclick="goHome()">🏠 New Quiz</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+const BANK = {
+  Python:{
+    Easy:[
+      {q:"What is the output of print(type([]))?",opts:["<class 'list'>","<class 'array'>","<class 'tuple'>","<class 'set'>"],ans:0,exp:"[] creates a list literal. type() returns the class of the object."},
+      {q:"Which keyword defines a function in Python?",opts:["function","def","fun","define"],ans:1,exp:"Python uses 'def' to declare functions."},
+      {q:"What does len('hello') return?",opts:["4","5","6","None"],ans:1,exp:"'hello' has 5 characters. len() counts them."},
+      {q:"Which is a valid Python comment?",opts:["// comment","/* comment */","# comment","-- comment"],ans:2,exp:"Python uses # for single-line comments."},
+      {q:"What is the result of 2 ** 3?",opts:["6","8","5","9"],ans:1,exp:"** is the exponentiation operator. 2³ = 8."},
+      {q:"How do you start a Python list?",opts:["{}","()","[]","<>"],ans:2,exp:"Lists use square brackets [ ]."},
+      {q:"What does bool(0) return?",opts:["True","False","0","None"],ans:1,exp:"0 is falsy in Python. bool(0) returns False."},
+      {q:"Which method adds an item to end of a list?",opts:[".add()",".push()",".append()",".insert()"],ans:2,exp:"list.append(item) adds to the end."},
+      {q:"What is the output of print(10 // 3)?",opts:["3.33","3","4","1"],ans:1,exp:"// is floor division. 10 ÷ 3 = 3 with remainder 1."},
+      {q:"What keyword loops over a sequence?",opts:["loop","while","foreach","for"],ans:3,exp:"Python uses 'for x in sequence' to iterate."},
+      {q:"What is str(42)?",opts:["42","'42'","Error","42.0"],ans:1,exp:"str() converts a number to its string form."},
+      {q:"Which is NOT a Python data type?",opts:["int","float","char","str"],ans:2,exp:"Python has no 'char' type. Characters are strings of length 1."},
+      {q:"What does range(3) produce?",opts:["[1,2,3]","[0,1,2]","[0,1,2,3]","[1,2]"],ans:1,exp:"range(3) generates 0, 1, 2 — not including 3."},
+      {q:"How do you get user input in Python 3?",opts:["scanf()","cin >>","input()","readline()"],ans:2,exp:"input() reads a line from stdin in Python 3."},
+      {q:"What does None represent?",opts:["0","False","Absence of value","Empty string"],ans:2,exp:"None is Python's null value."},
+      {q:"Which operator checks equality?",opts:["=","==","===","equals"],ans:1,exp:"== checks equality. = is assignment."},
+      {q:"What is type(3.14)?",opts:["int","double","float","decimal"],ans:2,exp:"3.14 is a float. type() returns <class 'float'>."},
+      {q:"How do you import the 'math' module?",opts:["include math","require math","import math","using math"],ans:2,exp:"Python uses the 'import' keyword."},
+      {q:"What does abs(-7) return?",opts:["-7","7","0","Error"],ans:1,exp:"abs() returns the absolute value. |-7| = 7."},
+      {q:"Which of these creates a dictionary?",opts:["[]","()","{}","<>"],ans:2,exp:"Dictionaries use curly braces {} with key:value pairs."}
+    ],
+    Medium:[
+      {q:"What is the output?",code:"x = [1,2,3]\ny = x\ny.append(4)\nprint(x)",opts:["[1,2,3]","[1,2,3,4]","Error","[4]"],ans:1,exp:"Lists assign by reference. y and x point to the same object, so appending to y also modifies x."},
+      {q:"What does *args allow in a function?",opts:["Keyword arguments","Variable positional arguments","Only 2 arguments","Named arguments"],ans:1,exp:"*args collects extra positional arguments into a tuple."},
+      {q:"List comprehension for squares of 0–4?",opts:["[x^2 for x in range(5)]","[x**2 for x in range(5)]","[x*x in range(5)]","map(x**2, range(5))"],ans:1,exp:"[x**2 for x in range(5)] generates [0,1,4,9,16]."},
+      {q:"What does dict.get('key','default') return if key is missing?",opts:["Raises KeyError","Returns None","Returns 'default'","Inserts 'default'"],ans:2,exp:"dict.get(key, default) safely returns default instead of raising KeyError."},
+      {q:"What is the result of [1,2,3][::-1]?",opts:["[3,2,1]","[1,2,3]","[2,3]","Error"],ans:0,exp:"[::-1] is a slice with step -1, reversing the list."},
+      {q:"Which exception is raised for a missing dict key?",opts:["IndexError","ValueError","KeyError","TypeError"],ans:2,exp:"Accessing a dict with a missing key raises KeyError."},
+      {q:"What does zip([1,2],[3,4]) produce?",opts:["[1,2,3,4]","[(1,3),(2,4)]","[(1,2),(3,4)]","Error"],ans:1,exp:"zip() pairs elements: (1,3) and (2,4)."},
+      {q:"What is lambda x: x*2?",opts:["A class","An anonymous function","A list","A generator"],ans:1,exp:"lambda creates an anonymous (unnamed) function inline."},
+      {q:"What does set([1,2,2,3]) return?",opts:["{1,2,2,3}","{1,2,3}","[1,2,3]","Error"],ans:1,exp:"Sets automatically remove duplicates."},
+      {q:"Which method removes and returns the last list item?",opts:[".remove()",".delete()",".pop()",".discard()"],ans:2,exp:"list.pop() removes and returns the last element."},
+      {q:"What is a generator in Python?",opts:["A function using return","A function using yield","A list comprehension","A lambda"],ans:1,exp:"Generators use 'yield' to lazily produce values one at a time."},
+      {q:"What is the output?",code:"def f(a, b=[]):\n    b.append(a)\n    return b\nprint(f(1))\nprint(f(2))",opts:["[1]\\n[2]","[1]\\n[1,2]","Error","[1]\\n[2,1]"],ans:1,exp:"Mutable default arguments are shared across calls — a famous Python gotcha."},
+      {q:"What does isinstance(x, (int, float)) check?",opts:["x is int","x is float","x is int or float","x is both"],ans:2,exp:"isinstance accepts a tuple of types and returns True if x matches any."},
+      {q:"What does str.join() do?",opts:["Splits a string","Joins iterable elements with separator","Concatenates two strings","Encodes a string"],ans:1,exp:"','.join(['a','b','c']) produces 'a,b,c'."},
+      {q:"What do *args and **kwargs together allow?",opts:["Only positional","Only keyword","Any combination","Fixed args only"],ans:2,exp:"Together they capture any positional and keyword arguments."}
+    ],
+    Hard:[
+      {q:"What is the output?",code:"class A:\n    x = 1\na = A()\nb = A()\na.x = 2\nprint(b.x)",opts:["2","1","Error","None"],ans:1,exp:"Setting a.x = 2 creates an instance attribute on 'a' only. The class attribute A.x = 1 remains unchanged."},
+      {q:"What is the MRO in Python?",opts:["Alphabetical class lookup","C3 linearization algorithm","Depth-first left-to-right","Random resolution"],ans:1,exp:"Python uses C3 linearization to determine the order in which base classes are searched."},
+      {q:"What does __slots__ do?",opts:["Defines class methods","Restricts instance attributes, saving memory","Creates properties","Sets class constants"],ans:1,exp:"__slots__ prevents creation of __dict__ per instance, reducing memory usage."},
+      {q:"What is the output?",code:"x = 1\ndef f():\n    x += 1\n    return x\nf()",opts:["2","UnboundLocalError","1","None"],ans:1,exp:"Python treats x as local because of the assignment. Reading it before assignment raises UnboundLocalError."},
+      {q:"What does functools.lru_cache do?",opts:["Limits recursion","Caches function return values by input","Logs calls","Parallelizes execution"],ans:1,exp:"lru_cache memoizes results keyed by arguments using a Least Recently Used eviction policy."},
+      {q:"What is a Python metaclass?",opts:["A class that inherits everything","A class whose instances are classes","A decorator for classes","An abstract base class"],ans:1,exp:"Metaclasses define the behavior of classes themselves. type is the default metaclass."},
+      {q:"What does __enter__ and __exit__ enable?",opts:["Operator overloading","Context manager (with statement)","Iterator protocol","Descriptor protocol"],ans:1,exp:"Defining __enter__ and __exit__ lets a class be used with the 'with' statement."},
+      {q:"What is the GIL in CPython?",opts:["Global Integer Limit","Global Interpreter Lock preventing true multithreading","Garbage Inline Layer","Generic Import Library"],ans:1,exp:"The GIL is a mutex that only lets one thread execute Python bytecode at a time in CPython."},
+      {q:"What does weakref.ref(obj) return?",opts:["A copy of obj","A reference that doesn't prevent GC","A proxy to obj","A frozen version"],ans:1,exp:"Weak references don't increment the reference count, so the object can still be garbage collected."},
+      {q:"What is the output?",code:"from itertools import chain\nprint(list(chain([1,2],[3,4])))",opts:["[[1,2],[3,4]]","[1,2,3,4]","Error","[(1,3),(2,4)]"],ans:1,exp:"itertools.chain flattens multiple iterables into a single sequence."}
+    ]
+  },
+  Java:{
+    Easy:[
+      {q:"Which keyword declares a constant in Java?",opts:["static","const","final","immutable"],ans:2,exp:"'final' prevents reassignment of a variable after initialization."},
+      {q:"How do you print to console in Java?",opts:["print('hello')","console.log('hello')","System.out.println('hello')","echo 'hello'"],ans:2,exp:"Java uses System.out.println() to print to standard output."},
+      {q:"What is the size of a Java int?",opts:["8 bits","16 bits","32 bits","64 bits"],ans:2,exp:"Java's int is a 32-bit signed two's complement integer."},
+      {q:"Which is NOT a Java primitive type?",opts:["int","boolean","String","double"],ans:2,exp:"String is a class (reference type), not a primitive."},
+      {q:"What keyword creates an object in Java?",opts:["create","make","new","build"],ans:2,exp:"'new' allocates memory and creates an instance of a class."},
+      {q:"Which modifier restricts access to within the class?",opts:["public","protected","private","default"],ans:2,exp:"'private' restricts access to within the declaring class only."},
+      {q:"What is the entry point of a Java program?",opts:["start()","run()","main()","init()"],ans:2,exp:"public static void main(String[] args) is Java's program entry point."},
+      {q:"What does null represent in Java?",opts:["0","False","Absent object reference","Empty string"],ans:2,exp:"null means a reference variable doesn't point to any object."},
+      {q:"Which loop guarantees at least one execution?",opts:["for","while","do-while","foreach"],ans:2,exp:"do-while checks the condition after executing the body."},
+      {q:"What is a Java interface?",opts:["A class with no methods","A contract of method signatures","A type of array","A private class"],ans:1,exp:"Interfaces define a contract of methods that implementing classes must provide."},
+      {q:"How do you declare an integer array of size 5?",opts:["int arr = new int[5]","int[] arr = new int[5]","array<int> arr(5)","int arr[5]"],ans:1,exp:"Java array declaration: type[] name = new type[size]."},
+      {q:"What does instanceof check?",opts:["Reference equality","Whether an object is of a type","Whether a variable is null","Method existence"],ans:1,exp:"instanceof returns true if the object is an instance of the specified type."},
+      {q:"What is autoboxing?",opts:["Serializing an object","Auto-converting primitives to wrapper objects","Casting superclass to subclass","Importing all classes"],ans:1,exp:"Autoboxing automatically converts int to Integer, double to Double, etc."},
+      {q:"What exception is thrown for array out-of-bounds?",opts:["IndexOutOfBoundsException","ArrayException","OutOfRangeException","NullPointerException"],ans:0,exp:"ArrayIndexOutOfBoundsException is thrown when accessing beyond array length."},
+      {q:"What keyword is used for inheritance in Java?",opts:["inherits","implements","extends","super"],ans:2,exp:"A class uses 'extends' to inherit from another class."}
+    ],
+    Medium:[
+      {q:"Difference between == and .equals() for Strings?",opts:["No difference","== checks value","== checks reference, .equals() checks value","Both check references"],ans:2,exp:"== compares references (memory address). .equals() compares string content."},
+      {q:"What does synchronized do?",opts:["Makes a method faster","Ensures only one thread at a time enters","Copies an object","Marks a final method"],ans:1,exp:"synchronized creates a mutex lock to prevent concurrent access."},
+      {q:"What is the output?",code:"int x = 5;\nSystem.out.println(x++);\nSystem.out.println(x);",opts:["5\\n5","5\\n6","6\\n6","6\\n5"],ans:1,exp:"x++ is post-increment: prints 5 then increments. Next print shows 6."},
+      {q:"What is an abstract class in Java?",opts:["Only static methods","Cannot be instantiated, may have abstract methods","No attributes","Fully implemented"],ans:1,exp:"Abstract classes can't be instantiated and can have abstract methods subclasses must implement."},
+      {q:"What does ArrayList use internally?",opts:["Linked list","Dynamic array","Hash table","Tree"],ans:1,exp:"ArrayList is backed by a resizable array that grows when capacity is exceeded."},
+      {q:"What is method overloading?",opts:["Overriding a parent method","Multiple methods with same name but different parameters","A method calling itself","Using super()"],ans:1,exp:"Overloading = same method name, different parameter list."},
+      {q:"What does try-with-resources do?",opts:["Handles multiple exceptions","Auto-closes resources implementing AutoCloseable","Retries failed operations","Loads resources from disk"],ans:1,exp:"Resources in try() are automatically closed when the block exits."},
+      {q:"What does HashMap.put(k,v) return?",opts:["The new value","The previous value for key k, or null","void","The map size"],ans:1,exp:"put() returns the old value associated with the key, or null if the key was new."},
+      {q:"What is a Java generic?",opts:["A general-purpose method","A parameterized type for type-safe collections","A default value","An abstract class"],ans:1,exp:"Generics like List<T> provide compile-time type safety."},
+      {q:"What is the diamond problem in Java?",opts:["Ambiguous inheritance; solved by disallowing multiple class inheritance","Multiple returns","Stack overflow","Type erasure"],ans:0,exp:"Java disallows multiple class inheritance to avoid ambiguity."}
+    ],
+    Hard:[
+      {q:"What is the output?",code:"String a = \"hello\";\nString b = \"hello\";\nString c = new String(\"hello\");\nSystem.out.println(a == b);\nSystem.out.println(a == c);",opts:["true\\ntrue","false\\nfalse","true\\nfalse","false\\ntrue"],ans:2,exp:"String literals are interned in the pool (a==b is true). 'new String()' creates a separate heap object (a==c is false)."},
+      {q:"What is type erasure in Java generics?",opts:["Removing null types","Generic type info removed at runtime","Casting exceptions at runtime","Erasing final fields"],ans:1,exp:"Generic type parameters are erased at compile time; the JVM sees raw types at runtime."},
+      {q:"What does volatile guarantee?",opts:["Atomicity of compound operations","Visibility of writes across threads","Thread scheduling priority","Memory allocation order"],ans:1,exp:"volatile ensures reads/writes go to main memory, not CPU register caches."},
+      {q:"Difference between Comparable and Comparator?",opts:["No difference","Comparable = natural order; Comparator = external order","Comparator is faster","Comparable works only on primitives"],ans:1,exp:"Comparable.compareTo() defines natural ordering. Comparator.compare() defines external ordering."},
+      {q:"What is a Java memory leak?",opts:["OutOfMemoryError always","Objects held longer than needed, preventing GC","Static variables","Stack overflow"],ans:1,exp:"Memory leaks occur when unintentionally reachable objects prevent the GC from freeing them."},
+      {q:"Difference between wait() and sleep()?",opts:["No difference","wait() releases monitor lock; sleep() does not","sleep() is more accurate","wait() needs no synchronization"],ans:1,exp:"wait() releases the object's monitor lock. sleep() pauses the thread but holds all locks."},
+      {q:"What is the JIT compiler?",opts:["Interprets bytecode line by line","Compiles hot bytecode to native machine code at runtime","Compiles Java source to bytecode","Manages GC"],ans:1,exp:"The JIT optimizes frequently executed bytecode paths into native machine instructions."},
+      {q:"What is double-checked locking?",opts:["Running tests twice","Singleton optimization with volatile","A loop pattern","A null check pattern"],ans:1,exp:"Check null outside then inside synchronized block, using volatile to prevent instruction reordering."}
+    ]
+  },
+  C:{
+    Easy:[
+      {q:"Which header is needed for printf()?",opts:["<stdlib.h>","<string.h>","<stdio.h>","<math.h>"],ans:2,exp:"stdio.h declares printf, scanf, and related I/O functions."},
+      {q:"What does int *p declare?",opts:["An integer","A pointer to an integer","An array","A function"],ans:1,exp:"* in a declaration means pointer. int *p is a pointer to an int."},
+      {q:"How are C statements terminated?",opts:["newline",": (colon)","; (semicolon)",". (period)"],ans:2,exp:"C statements are terminated with a semicolon."},
+      {q:"What does sizeof(int) return on a 64-bit system?",opts:["2","4","8","16"],ans:1,exp:"On most 64-bit systems, int is 4 bytes (32 bits)."},
+      {q:"What does malloc() return?",opts:["An int","A void pointer","NULL always","A struct"],ans:1,exp:"malloc returns a void* pointer to allocated memory, or NULL on failure."},
+      {q:"What is the address-of operator?",opts:["*","&","->","%"],ans:1,exp:"& is the address-of operator. &x gives the memory address of variable x."},
+      {q:"What is a struct in C?",opts:["A function pointer","A collection of variables under one name","A macro","A type alias"],ans:1,exp:"struct groups related variables of different types under a single name."},
+      {q:"What does free() do?",opts:["Frees CPU","Deallocates heap memory","Clears a variable","Closes a file"],ans:1,exp:"free() releases heap memory previously allocated with malloc/calloc/realloc."},
+      {q:"What is a null terminator in C strings?",opts:["A 0 byte marking end of string","A space","EOF","Newline"],ans:0,exp:"C strings end with '\\0' (null byte). Without it, string functions read beyond bounds."},
+      {q:"How do you access a struct member via pointer p?",opts:["p.member","*p.member","p->member","p:member"],ans:2,exp:"The -> operator dereferences a pointer and accesses a member in one step."},
+      {q:"What is the value of an uninitialized local variable?",opts:["0","null","Undefined (garbage)","False"],ans:2,exp:"Local variables in C are not zero-initialized. They contain whatever was in memory."},
+      {q:"Which operator dereferences a pointer?",opts:["&","*","->","."],ans:1,exp:"*ptr dereferences a pointer, giving you the value it points to."},
+      {q:"What does %s print?",opts:["A float","An integer","A string","A single character"],ans:2,exp:"%s in printf handles C strings (char arrays/pointers)."},
+      {q:"What is the output of printf(\"%d\", 5 > 3)?",opts:["5","3","1","0"],ans:2,exp:"5 > 3 is true, which evaluates to integer 1 in C."},
+      {q:"Which loop is best when iteration count is known?",opts:["while","do-while","for","goto"],ans:2,exp:"for loops are idiomatic when the iteration count is known."}
+    ],
+    Medium:[
+      {q:"What is the output?",code:"int a = 5;\nint *p = &a;\n*p = 10;\nprintf(\"%d\", a);",opts:["5","10","Address of a","Undefined"],ans:1,exp:"*p = 10 writes through the pointer, modifying 'a' directly."},
+      {q:"What is a dangling pointer?",opts:["A null pointer","A pointer to freed or out-of-scope memory","A double pointer","A function pointer"],ans:1,exp:"Dangling pointers point to memory that has been freed or has gone out of scope."},
+      {q:"What does calloc(n, size) do differently than malloc?",opts:["Allocates n blocks and zero-initializes","Just allocates, faster","Allocates on stack","Allocates n*n bytes"],ans:0,exp:"calloc allocates n elements of given size and zero-initializes all bytes."},
+      {q:"What is a segmentation fault?",opts:["Division by zero","Invalid memory access","Stack overflow","Integer overflow"],ans:1,exp:"A segfault occurs when a program accesses memory it's not permitted to."},
+      {q:"What is pointer arithmetic ptr+1 for int pointer?",opts:["Adds 1 byte","Adds sizeof(int) bytes","Adds 1 bit","Undefined"],ans:1,exp:"Pointer arithmetic scales by the pointed-to type's size."},
+      {q:"Difference between ++i and i++?",opts:["No difference","++i increments before use; i++ after","i++ is faster","++i works only in loops"],ans:1,exp:"Pre-increment (++i) returns the new value. Post-increment (i++) returns the old value."},
+      {q:"What does static mean for a local variable?",opts:["Makes it const","Preserves value between function calls","Puts it on heap","Makes it global"],ans:1,exp:"A static local variable retains its value between function calls."},
+      {q:"What is a union in C?",opts:["Same as struct","All members share the same memory","A set of functions","A linked list"],ans:1,exp:"Union members overlap in memory. The union's size equals its largest member."},
+      {q:"What does const int *p mean?",opts:["p cannot change","*p cannot change","Neither can change","Both can change"],ans:1,exp:"const int *p means the pointed-to value (*p) is const; the pointer itself can change."},
+      {q:"What is a memory leak in C?",opts:["Pointer becomes null","Allocated heap memory never freed","Stack overflow","Accessing freed memory"],ans:1,exp:"Memory leaks occur when malloc'd memory is never freed, gradually consuming resources."}
+    ],
+    Hard:[
+      {q:"What is the output?",code:"int arr[] = {1,2,3,4,5};\nint *p = arr + 2;\nprintf(\"%d %d\", *p, *(p-1));",opts:["3 2","2 1","3 4","Error"],ans:0,exp:"arr+2 points to arr[2]=3. *(p-1) points to arr[1]=2."},
+      {q:"What is undefined behavior in C?",opts:["A runtime error always","Code whose behavior the standard doesn't define","A compilation error","A warning"],ans:1,exp:"UB means the standard places no requirements; the compiler can do anything."},
+      {q:"What does volatile tell the compiler?",opts:["Variable is constant","Don't cache in register; re-read from memory","It's a pointer","Thread-safe"],ans:1,exp:"volatile prevents the compiler from optimizing away reads/writes, crucial for memory-mapped I/O."},
+      {q:"What is the strict aliasing rule?",opts:["Pointers of different types may not alias the same memory","All pointers may alias","Only const pointers may alias","Array pointers are exempt"],ans:0,exp:"Accessing memory through an incompatible pointer type is UB, allowing aggressive compiler optimizations."},
+      {q:"What is a function pointer syntax in C?",opts:["int f*()","int (*f)(int)","int &f(int)","func<int> f"],ans:1,exp:"int (*f)(int) declares f as a pointer to a function taking an int and returning int."},
+      {q:"What happens when you free() a pointer twice?",opts:["No effect","Undefined behavior (double-free)","Sets pointer to NULL","Allocates more memory"],ans:1,exp:"Double-free is UB and a critical security vulnerability — it can corrupt the heap allocator."},
+      {q:"Difference between memcpy and memmove?",opts:["No difference","memmove handles overlapping regions; memcpy does not","memcpy is for strings only","memmove is faster"],ans:1,exp:"memmove safely handles overlapping src/dest. memcpy has UB for overlapping regions."},
+      {q:"What does realloc(ptr, 0) typically do?",opts:["malloc(0)","Frees the pointer (implementation-defined)","calloc(1,0)","Nothing"],ans:1,exp:"Passing size 0 to realloc is implementation-defined but typically behaves like free()."}
+    ]
+  },
+  Swift:{
+    Easy:[
+      {q:"Which keyword declares a constant in Swift?",opts:["var","const","let","final"],ans:2,exp:"'let' declares a constant. 'var' declares a mutable variable."},
+      {q:"What is an Optional in Swift?",opts:["A required parameter","A value that may be nil","A default parameter","A class type"],ans:1,exp:"Optionals (marked with ?) can hold a value or nil."},
+      {q:"How do you safely unwrap an optional?",opts:["force unwrap with !","if-let binding","guard statement","Both B and C"],ans:3,exp:"Both if-let and guard-let safely unwrap optionals without crashing."},
+      {q:"What does ?? do in Swift?",opts:["Nil check","Nil-coalescing: returns lhs or default if nil","Comparison","Optional chaining"],ans:1,exp:"a ?? b returns a if non-nil, otherwise b."},
+      {q:"Which Swift type is a value type?",opts:["Class","Struct","Both","Neither"],ans:1,exp:"Structs are value types (copied). Classes are reference types (shared)."},
+      {q:"What keyword defines a function in Swift?",opts:["function","def","fn","func"],ans:3,exp:"Swift uses 'func' to declare functions."},
+      {q:"What does the guard statement do?",opts:["Creates a loop","Exits early if condition fails","Defines a class","Handles errors"],ans:1,exp:"guard requires a condition to be true; the else block handles failure."},
+      {q:"What is a Swift protocol?",opts:["A network protocol","A blueprint of methods/properties for types","A base class","An enum"],ans:1,exp:"Protocols define a contract that conforming types must implement."},
+      {q:"Which keyword marks a method that can throw?",opts:["throws","error","try","catch"],ans:0,exp:"A function marked 'throws' can propagate errors to its caller."},
+      {q:"What is string interpolation in Swift?",opts:["Converting string to int","Embedding expressions with \\(expr)","Splitting a string","Comparing strings"],ans:1,exp:"\"Hello \\(name)\" embeds the value of 'name' directly into the string."},
+      {q:"What does Array.append() do?",opts:["Removes last element","Adds to start","Adds to end","Sorts the array"],ans:2,exp:"append() adds an element to the end of an Array."},
+      {q:"What is an enum in Swift?",opts:["A class type","A named set of related values","A protocol","A struct"],ans:1,exp:"Enums define a group of related values and can have associated values and methods."},
+      {q:"What is self in a Swift method?",opts:["The superclass","The current instance","A static reference","The module"],ans:1,exp:"'self' refers to the current instance, like 'this' in other languages."},
+      {q:"How do you iterate over an array in Swift?",opts:["for i in arr","foreach arr","arr.forEach","for i to arr"],ans:0,exp:"Swift's 'for x in collection' iterates over every element."},
+      {q:"Which is only usable with class types in Swift?",opts:["struct","enum","weak","protocol"],ans:2,exp:"'weak' can only be applied to optional class-type properties to avoid retain cycles."}
+    ],
+    Medium:[
+      {q:"Difference between class and struct in Swift?",opts:["No difference","Class = reference type, Struct = value type","Struct supports inheritance","Class has no init"],ans:1,exp:"Classes are reference types (shared); structs are value types (copied)."},
+      {q:"What does @escaping mean on a closure?",opts:["Runs immediately","May outlive the function call","Is discardable","Is optional"],ans:1,exp:"@escaping marks a closure that can be stored and called after the function returns."},
+      {q:"What is the output?",code:"var arr = [1,2,3]\nlet copy = arr\narr.append(4)\nprint(copy.count)",opts:["4","3","Error","1"],ans:1,exp:"Arrays are value types. 'copy' is an independent copy at time of assignment."},
+      {q:"What is a computed property?",opts:["A stored property with getter only","A property that calculates its value each access","A lazy property","A static property"],ans:1,exp:"Computed properties use get/set blocks; they don't store a value but calculate it."},
+      {q:"What does lazy var do?",opts:["Makes property immutable","Delays initialization until first access","Makes it thread-safe","Marks it optional"],ans:1,exp:"lazy properties are only initialized when first accessed, saving resources."},
+      {q:"What does mutating func do in a struct?",opts:["Makes the func public","Allows the method to modify struct's properties","Creates a copy","Marks it throws"],ans:1,exp:"Structs are immutable by default. 'mutating' lets a method modify self or its properties."},
+      {q:"What is a Result<T, E> type?",opts:["A tuple","An enum representing success or failure","A generic array","An optional"],ans:1,exp:"Result<Success, Failure> has .success(T) and .failure(E) cases for typed error handling."},
+      {q:"What does defer do in Swift?",opts:["Delays execution forever","Runs a block when the current scope exits","Handles async","Creates a lazy property"],ans:1,exp:"defer schedules code to run when the current function/block exits, regardless of how."},
+      {q:"What is weak var used for?",opts:["Thread safety","Breaking retain cycles in ARC","Making a property optional","Lazy init"],ans:1,exp:"weak prevents strong reference cycles. The reference becomes nil when the object is deallocated."},
+      {q:"What is protocol-oriented programming?",opts:["Using classes exclusively","Protocols as primary abstraction over inheritance","A networking pattern","A loop pattern"],ans:1,exp:"POP favors protocol composition and extensions over class hierarchies — a core Swift paradigm."}
+    ],
+    Hard:[
+      {q:"What is ARC in Swift?",opts:["Automatic Runtime Compiler","Automatic Reference Counting","Abstract Resource Controller","Array Reference Cache"],ans:1,exp:"ARC automatically manages memory by counting strong references to class instances."},
+      {q:"What is a retain cycle?",opts:["A loop over objects","Two objects with strong refs to each other, preventing deallocation","A memory optimization","A thread lock"],ans:1,exp:"Retain cycles prevent ARC from deallocating objects. Broken with weak/unowned references."},
+      {q:"Difference between weak and unowned?",opts:["No difference","weak becomes nil if deallocated; unowned crashes if accessed after deallocation","unowned is optional","weak requires a class type"],ans:1,exp:"weak is Optional and safe. unowned is non-Optional and crashes if the object is nil."},
+      {q:"What is a Swift actor?",opts:["A thread","A reference type protecting state from concurrent access","A protocol","A function type"],ans:1,exp:"Actors serialize access to their mutable state, preventing data races in Swift Concurrency."},
+      {q:"What does async/await replace in Swift?",opts:["Optionals","Completion handler callbacks","Protocol extensions","Property observers"],ans:1,exp:"async/await provides structured concurrency, making async code read like synchronous code."},
+      {q:"What is a generic constraint <T: Equatable>?",opts:["T must be an enum","T must conform to Equatable protocol","T must be a class","T is optional"],ans:1,exp:"Constraints restrict generic types. T: Equatable means T must implement == and !=."},
+      {q:"Difference between map and compactMap?",opts:["No difference","compactMap removes nil results; map preserves them","map is faster","compactMap only works on Optionals"],ans:1,exp:"compactMap transforms and filters out nil values. map preserves all elements."},
+      {q:"What is @propertyWrapper?",opts:["A UI modifier","A custom type that adds logic to property get/set","A SwiftUI state variable","A protocol requirement"],ans:1,exp:"@propertyWrapper defines reusable get/set behavior encapsulated in a type, like @State."}
+    ]
+  },
+  R:{
+    Easy:[
+      {q:"What operator is used for assignment in R?",opts:["=","==","<-","=>"],ans:2,exp:"<- is the idiomatic assignment operator in R, though = also works."},
+      {q:"How do you create a vector in R?",opts:["vector()","list()","c()","array()"],ans:2,exp:"c() (combine) creates vectors: c(1,2,3) creates a numeric vector."},
+      {q:"What does length(x) return?",opts:["Number of rows","Number of characters","Number of elements","Memory size"],ans:2,exp:"length() returns the number of elements in a vector or list."},
+      {q:"What type does class(TRUE) return?",opts:["logical","boolean","integer","character"],ans:0,exp:"TRUE and FALSE are of class 'logical' in R."},
+      {q:"What does sum(c(1,2,3)) return?",opts:["123","6","3","Error"],ans:1,exp:"sum() adds all vector elements. 1+2+3=6."},
+      {q:"How do you install a package in R?",opts:["import()","install()","install.packages()","require()"],ans:2,exp:"install.packages('name') downloads and installs a package from CRAN."},
+      {q:"What does NA represent in R?",opts:["0","NULL","Not Available (missing value)","Infinity"],ans:2,exp:"NA means a missing or undefined value in a dataset."},
+      {q:"Which function loads an installed package?",opts:["import()","load()","library()","require()"],ans:2,exp:"library('package') attaches and loads an installed package."},
+      {q:"What does nrow(df) return?",opts:["Number of columns","Number of rows","Number of values","Number of NAs"],ans:1,exp:"nrow() returns the number of rows in a data frame or matrix."},
+      {q:"How do you access the 3rd element of vector x?",opts:["x[2]","x(3)","x[3]","x{3}"],ans:2,exp:"R uses 1-based indexing. x[3] gives the 3rd element."},
+      {q:"What does mean(c(2,4,6)) return?",opts:["6","12","4","2"],ans:2,exp:"mean = sum / count = 12/3 = 4."},
+      {q:"What is a data frame in R?",opts:["A matrix of numbers only","A table with columns of different types","A list of vectors","A statistical model"],ans:1,exp:"Data frames are the primary data structure for tabular data, allowing mixed column types."},
+      {q:"What does is.na(NA) return?",opts:["FALSE","TRUE","NA","Error"],ans:1,exp:"is.na() tests for missing values, returning TRUE for NA."},
+      {q:"What function shows the first 6 rows?",opts:["top()","head()","first()","preview()"],ans:1,exp:"head(df) shows the first 6 rows by default."},
+      {q:"Which operator is integer division in R?",opts:["/","//","%/%","%%"],ans:2,exp:"%/% is integer division in R. 7 %/% 2 = 3."}
+    ],
+    Medium:[
+      {q:"What is the output?",code:"x <- c(1, 2, 3, 4, 5)\nprint(x[x > 3])",opts:["[1] 1 2 3","[1] 4 5","TRUE/FALSE vector","Error"],ans:1,exp:"Logical indexing: x > 3 creates a logical vector, and x[logical] returns matching elements."},
+      {q:"What does apply(mat, 1, sum) do?",opts:["Sums all elements","Sums each row","Sums each column","Applies a loop"],ans:1,exp:"apply with MARGIN=1 applies the function row-wise. MARGIN=2 is column-wise."},
+      {q:"Difference between list and vector in R?",opts:["No difference","Vectors are homogeneous; lists can hold different types","Lists are faster","Vectors can be named"],ans:1,exp:"Vectors require all elements to be the same type. Lists can hold mixed types."},
+      {q:"What does %>% (pipe) do in dplyr?",opts:["Modulo operation","Passes left-hand result as first arg to right-hand function","Compares values","Creates a new variable"],ans:1,exp:"The pipe x %>% f() is equivalent to f(x), enabling readable data pipelines."},
+      {q:"What is a factor in R?",opts:["A numeric multiplier","A categorical variable with fixed levels","A boolean vector","A matrix type"],ans:1,exp:"Factors represent categorical data with predefined levels, useful for statistical modeling."},
+      {q:"What does tapply(x, grp, mean) compute?",opts:["Mean of x","Mean of x for each group in grp","Applies mean to all columns","Grouped median"],ans:1,exp:"tapply applies a function to subsets of x defined by the grouping variable grp."},
+      {q:"What is the purpose of tryCatch()?",opts:["Catch syntax errors","Handle runtime errors and exceptions","Loop over errors","Log errors"],ans:1,exp:"tryCatch lets you handle errors and warnings gracefully without crashing."},
+      {q:"What does merge(df1, df2, by='id') do?",opts:["Appends rows","Joins two data frames on a common column","Concatenates column names","Creates a matrix"],ans:1,exp:"merge() performs a join operation, combining rows where the 'by' key matches."},
+      {q:"What does which(x > 5) return?",opts:["TRUE/FALSE vector","Values greater than 5","Indices where condition is TRUE","Count of TRUE values"],ans:2,exp:"which() returns the integer indices of TRUE elements in a logical vector."},
+      {q:"What is vectorization in R?",opts:["Using loops","Operations applied element-wise to entire vectors","A vector of functions","Parallel processing"],ans:1,exp:"Vectorized operations like x * 2 multiply every element without explicit loops."}
+    ],
+    Hard:[
+      {q:"What is the output?",code:"x <- 1:5\nf <- function(x) x^2\nresult <- sapply(x, f)\nclass(result)",opts:["list","matrix","integer","numeric"],ans:2,exp:"sapply simplifies results to a vector. (1:5)^2 returns an integer vector."},
+      {q:"What is lazy evaluation in R?",opts:["R is slow","Function arguments are only evaluated when actually used","A package loading strategy","Loop optimization"],ans:1,exp:"R uses lazy evaluation for function arguments — they're not computed until accessed."},
+      {q:"Difference between == and identical() in R?",opts:["No difference","== is vectorized & NA-propagating; identical() checks exact equality","identical() is faster","== works only on strings"],ans:1,exp:"== is vectorized and NA-propagating. identical() returns a single TRUE/FALSE and checks all attributes."},
+      {q:"What is an R environment?",opts:["A global namespace","A data structure mapping names to values with a parent","A list of packages","A type of data frame"],ans:1,exp:"Environments are the fundamental scoping structure in R, each with a parent forming the search chain."},
+      {q:"What does Reduce(f, c(1,2,3,4)) do?",opts:["Maps f over the vector","Filters elements","Applies f cumulatively: f(f(f(1,2),3),4)","Reduces vector length"],ans:2,exp:"Reduce applies a binary function cumulatively from left to right, like fold-left."},
+      {q:"What causes R's copy-on-modify semantics?",opts:["R always copies immediately","Objects are shared until a modification triggers a copy","R never copies","R uses pointers"],ans:1,exp:"R's copy-on-modify shares data in memory until one is modified, then a copy is made."},
+      {q:"What is the purpose of Rcpp?",opts:["Runs R in C++","Integrates C++ code into R for performance-critical sections","A charting library","A data frame package"],ans:1,exp:"Rcpp provides a seamless interface between R and C++, allowing fast native extensions."},
+      {q:"What is a closure in R?",opts:["A sealed environment","A function that captures its enclosing environment's variables","A locked list","An immutable vector"],ans:1,exp:"Closures in R are functions bundled with their defining environment, enabling factory functions."}
+    ]
+  }
+};
+
+// STATE
+const S = { subject:null, diff:'Easy', count:10, emoji:'🐍', questions:[], idx:0, score:0, streak:0, bestStreak:0, answered:false, timeLeft:30, timer:null, times:[], history:[], isTeacherQuiz:false, teacherQuizId:null, teacherQuizName:'' };
+const DIFF_ICONS = {Easy:'🌱',Medium:'🔥',Hard:'💀'};
+const DIFF_SECS  = {Easy:30,Medium:20,Hard:15};
+
+// SELECT SCREEN
+function selectSubj(el, name, emoji) {
+  document.querySelectorAll('.subject-card').forEach(c=>c.classList.remove('selected'));
+  el.classList.add('selected'); S.subject=name; S.emoji=emoji;
+  S.isTeacherQuiz=false; S.teacherQuizId=null; S.teacherQuizName='';
+  document.getElementById('sum-lang').textContent=name;
+  var btn=document.getElementById('start-btn'); btn.disabled=false; btn.textContent='Start Quiz →';
+}
+function selectDiff(el, d) {
+  document.querySelectorAll('.diff-card').forEach(c=>c.classList.remove('selected'));
+  el.classList.add('selected'); S.diff=d;
+  document.getElementById('sum-diff').textContent=d+' '+DIFF_ICONS[d];
+}
+function selectCount(el, n) {
+  document.querySelectorAll('.count-btn').forEach(c=>c.classList.remove('selected'));
+  el.classList.add('selected'); S.count=n;
+  document.getElementById('sum-count').textContent=n;
+}
+document.getElementById('start-btn').addEventListener('click', function(){
+  if((!S.subject && !S.isTeacherQuiz)||this.disabled) return; startQuiz();
+});
+
+function selectTeacherQuiz(el, id, name, subject, difficulty, numQ) {
+  document.querySelectorAll('.subject-card').forEach(c=>c.classList.remove('selected'));
+  el.classList.add('selected');
+  S.isTeacherQuiz=true; S.teacherQuizId=id; S.teacherQuizName=name;
+  S.subject=subject; S.diff=difficulty; S.count=numQ; S.emoji='📋';
+  document.getElementById('sum-lang').textContent=name;
+  var btn=document.getElementById('start-btn'); btn.disabled=false;
+  btn.textContent='Start "'+name+'" →';
+}
+
+// START QUIZ
+function startQuiz() {
+  var SUBJ_MAP={'Mathematics':'Python','Science':'Java','History':'C','Geography':'Swift','Computer Science':'Python','General Knowledge':'R','English':'R','Sports':'Swift'};
+  var bankKey=S.subject in BANK?S.subject:(SUBJ_MAP[S.subject]||Object.keys(BANK)[0]);
+  var diffKey=S.diff in BANK[bankKey]?S.diff:'Easy';
+  const pool=[...BANK[bankKey][diffKey]].sort(()=>Math.random()-.5);
+  S.questions=pool.slice(0,Math.min(S.count,pool.length));
+  S.idx=0; S.score=0; S.streak=0; S.bestStreak=0; S.times=[]; S.history=[];
+
+  var displayTitle=S.isTeacherQuiz?('📋 '+S.teacherQuizName):(S.emoji+' '+S.subject+' Quiz');
+  document.getElementById('topbar-title').textContent=displayTitle;
+  document.getElementById('topbar-sub').textContent=`${S.diff} · ${S.questions.length} questions`;
+  document.getElementById('topbar-right').innerHTML=`<div class="diff-pill ${S.diff}">${DIFF_ICONS[S.diff]} ${S.diff}</div><div class="topbar-badge">${S.emoji} ${S.subject}</div>`;
+  document.getElementById('diff-icon').textContent=DIFF_ICONS[S.diff];
+  document.getElementById('diff-val').textContent=S.diff;
+
+  showScreen('quiz'); renderQuestion();
+}
+
+// RENDER QUESTION
+function renderQuestion() {
+  const q=S.questions[S.idx]; const total=S.questions.length;
+  S.answered=false;
+  document.getElementById('prog-label').textContent=`Question ${S.idx+1} of ${total}`;
+  document.getElementById('prog-count').textContent=`${S.score} / ${total} correct`;
+  document.getElementById('progress-fill').style.width=`${(S.idx/total)*100}%`;
+  document.getElementById('q-num-pill').textContent=`Q${S.idx+1}`;
+  document.getElementById('q-text').textContent=q.q;
+  document.getElementById('streak-val').textContent=S.streak;
+  const ce=document.getElementById('q-code');
+  if(q.code){ce.textContent=q.code;ce.style.display='block';}else{ce.style.display='none';}
+  const letters=['A','B','C','D'];
+  document.getElementById('options-grid').innerHTML=q.opts.map((o,i)=>`
+    <button class="opt-btn" onclick="selectAnswer(${i})">
+      <div class="opt-letter">${letters[i]}</div>
+      <div class="opt-text">${o}</div>
+    </button>`).join('');
+  document.getElementById('feedback-bar').className='feedback-bar';
+  document.getElementById('next-btn').className='next-btn';
+  startTimer();
+}
+
+// TIMER
+function startTimer(){
+  clearInterval(S.timer);
+  S.timeLeft=DIFF_SECS[S.diff]; updateTimer();
+  S.timer=setInterval(()=>{
+    S.timeLeft--; updateTimer();
+    if(S.timeLeft<=0){clearInterval(S.timer);if(!S.answered)timeUp();}
+  },1000);
+}
+function updateTimer(){
+  const el=document.getElementById('timer-val');
+  el.textContent=S.timeLeft;
+  el.className=S.timeLeft<=5?'warn':'';
+}
+function timeUp(){
+  S.answered=true;
+  const q=S.questions[S.idx];
+  document.querySelectorAll('.opt-btn')[q.ans].classList.add('correct');
+  document.querySelectorAll('.opt-btn').forEach(b=>b.classList.add('answered'));
+  S.streak=0; S.times.push(0);
+  S.history.push({q:q.q,correct:false,chosen:-1,ans:q.ans,opts:q.opts});
+  showFeedback('timeout','⏰ Time\'s up!',q.exp);
+  const nb=document.getElementById('next-btn');
+  nb.className='next-btn show';
+  nb.textContent=S.idx===S.questions.length-1?'See Results →':'Next Question →';
+}
+
+// SELECT ANSWER
+function selectAnswer(i){
+  if(S.answered) return; S.answered=true;
+  clearInterval(S.timer);
+  S.times.push(DIFF_SECS[S.diff]-S.timeLeft);
+  const q=S.questions[S.idx];
+  const btns=document.querySelectorAll('.opt-btn');
+  const correct=i===q.ans;
+  btns[i].classList.add(correct?'correct':'wrong');
+  if(!correct) btns[q.ans].classList.add('correct');
+  btns.forEach((b,bi)=>{if(bi!==i&&bi!==q.ans)b.classList.add('dim');b.classList.add('answered');});
+  if(correct){
+    S.score++;S.streak++;if(S.streak>S.bestStreak)S.bestStreak=S.streak;
+    document.getElementById('streak-val').textContent=S.streak;
+    showFeedback('correct','✓ Correct!',q.exp);
+  } else {
+    S.streak=0; document.getElementById('streak-val').textContent=0;
+    showFeedback('wrong','✗ Wrong.',q.exp);
+  }
+  S.history.push({q:q.q,correct,chosen:i,ans:q.ans,opts:q.opts});
+  const nb=document.getElementById('next-btn');
+  nb.className='next-btn show';
+  nb.textContent=S.idx===S.questions.length-1?'See Results →':'Next Question →';
+}
+function showFeedback(type,title,exp){
+  const fb=document.getElementById('feedback-bar');
+  fb.className=`feedback-bar show ${type}`;
+  const titleEl=document.getElementById('fb-title');
+  titleEl.className=`fb-title ${type==='correct'?'ok':type==='wrong'?'no':'to'}`;
+  titleEl.textContent=title;
+  document.getElementById('fb-exp').textContent=exp;
+}
+function nextQuestion(){
+  S.idx++; if(S.idx>=S.questions.length) showResults(); else renderQuestion();
+}
+
+// RESULTS
+function showResults(){
+  clearInterval(S.timer); showScreen('result');
+  const pct=Math.round((S.score/S.questions.length)*100);
+  const avg=S.times.length?Math.round(S.times.reduce((a,b)=>a+b,0)/S.times.length):0;
+  const emoji=pct>=90?'🏆':pct>=70?'🎯':pct>=50?'😤':'📖';
+  const msg=pct>=90?'Excellent!':pct>=70?'Well Done!':pct>=50?'Good Effort!':'Keep Practicing!';
+
+  document.getElementById('topbar-title').textContent='Quiz Results';
+  document.getElementById('topbar-sub').textContent=`${S.emoji} ${S.subject} · ${S.diff}`;
+  document.getElementById('topbar-right').innerHTML=`<div class="topbar-badge">📋 Results</div>`;
+
+  document.getElementById('result-emoji').textContent=emoji;
+  document.getElementById('result-pct').textContent=`${pct}%`;
+  document.getElementById('result-sub').textContent=`${msg} — ${S.emoji} ${S.subject} · ${S.diff} · ${S.questions.length} Qs`;
+
+  const col=pct>=70?'var(--accent-green)':pct>=50?'var(--accent-amber)':'var(--accent-coral)';
+  document.getElementById('rs-score').textContent=`${S.score}/${S.questions.length}`;
+  document.getElementById('rs-score').style.color=col;
+  document.getElementById('rs-time').textContent=`${avg}s`;
+  document.getElementById('rs-streak').textContent=S.bestStreak;
+  document.getElementById('review-summary').textContent=`${S.score} correct · ${S.questions.length-S.score} wrong`;
+
+  document.getElementById('review-list').innerHTML=S.history.map((h,i)=>`
+    <div class="review-item">
+      <div class="ri-dot ${h.correct?'ok':'no'}">${h.correct?'✓':'✗'}</div>
+      <div style="flex:1;min-width:0">
+        <div class="ri-q">Q${i+1}: ${h.q.length>68?h.q.slice(0,68)+'…':h.q}</div>
+        ${!h.correct&&h.chosen>=0?`<div class="ri-ans">You chose: ${h.opts[h.chosen]} &nbsp;·&nbsp; Correct: ${h.opts[h.ans]}</div>`:''}
+        ${h.chosen===-1?`<div class="ri-ans">Timed out · Correct: ${h.opts[h.ans]}</div>`:''}
+        ${h.correct?`<div class="ri-ans" style="color:var(--accent-green)">${h.opts[h.ans]}</div>`:''}
+      </div>
+    </div>`).join('');
+
+  // ── SAVE TO BACKEND ──────────────────────────────────
+  const totalTimeSec = S.times.reduce((a,b)=>a+b,0);
+  const answers = S.history.map(h=>({
+    question:    h.q,
+    options:     h.opts,
+    correct:     h.ans,
+    user_answer: h.chosen,
+  }));
+  fetch('/api/submit-quiz', {
+    method: 'POST',
+    headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({
+      subject:    S.subject,
+      difficulty: S.diff,
+      answers:    answers,
+      time_taken: totalTimeSec,
+    })
+  }).catch(err => console.error('Failed to save quiz result:', err));
+}
+
+function retryQuiz(){startQuiz();}
+function goHome(){
+  showScreen('select');
+  document.getElementById('topbar-title').textContent='Quiz Hub';
+  document.getElementById('topbar-sub').textContent='Hi 👋 — Pick a language and start a fresh quiz';
+  document.getElementById('topbar-right').innerHTML='<div class="topbar-badge">✨ Code Quiz</div>';
+}
+function showScreen(name){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(`screen-${name}`).classList.add('active');
+  window.scrollTo(0,0);
+}
+</script>
+</body>
+</html>

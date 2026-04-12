@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EduBoard – Teacher Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@400;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --blue:#7C3AED;--blue-dark:#4C1D95;--blue-soft:#F5F3FF;--blue-mid:#DDD6FE;
+  --green:#059669;--green-soft:#D1FAE5;
+  --amber:#D97706;--amber-soft:#FEF3C7;
+  --red:#DC2626;--red-soft:#FEE2E2;
+  --bg:#F8F7FF;--card:#FFFFFF;--text:#1E1030;--muted:#6B6B8A;--light:#A89FC0;
+  --border:#EDE9F8;--radius:14px;--radius-sm:9px;
+}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%;overflow:hidden}
+body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(--text);display:flex}
+
+/* SIDEBAR */
+.sidebar{width:220px;background:#FFFFFF;border-right:1.5px solid #EDE9F8;display:flex;flex-direction:column;flex-shrink:0;height:100vh;overflow-y:auto}
+.sb-brand{display:flex;align-items:center;gap:10px;padding:22px 18px 20px;border-bottom:1px solid #EDE9F8}
+.sb-brand-icon{width:36px;height:36px;background:var(--blue);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.sb-brand-name{font-family:'Bricolage Grotesque',sans-serif;font-size:18px;font-weight:800;color:#1E1030;letter-spacing:-0.3px}
+.sb-brand-role{font-size:10px;color:#6B6B8A;margin-top:1px}
+.sb-section{padding:22px 16px 10px;font-size:10px;font-weight:700;letter-spacing:1.8px;color:#A89FC0;text-transform:uppercase}
+.subj-btn{display:flex;align-items:center;gap:10px;padding:11px 12px;margin:2px 8px;border-radius:10px;cursor:pointer;transition:all .18s;color:#6B6B8A;font-size:13px;font-weight:500}
+.subj-btn:hover{background:#F5F3FF;color:#7C3AED;transform:translateX(2px)}
+.subj-btn.active{background:#7C3AED;color:white;font-weight:600;box-shadow:0 4px 16px rgba(124,58,237,0.25)}
+.subj-icon{width:32px;height:32px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
+.subj-label{flex:1;font-weight:600}
+.subj-count{font-size:11px;color:#6B6B8A;background:#F5F3FF;padding:2px 8px;border-radius:20px;font-weight:700}
+.subj-btn.active .subj-count{color:white;background:rgba(255,255,255,0.25)}
+.sb-bottom{margin-top:auto;padding:14px 8px;border-top:1.5px solid #EDE9F8}
+.sb-user{display:flex;align-items:center;gap:9px;padding:9px 12px;border-radius:9px;background:#F5F3FF;cursor:pointer;transition:background .18s}
+.sb-user:hover{background:#EDE9F8}
+.sb-avatar{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,var(--blue),#A78BFA);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:white;flex-shrink:0}
+.sb-user-name{font-size:12.5px;font-weight:600;color:#1E1030}
+.sb-user-sub{font-size:10.5px;color:#6B6B8A}
+
+/* MAIN */
+.main{flex:1;display:flex;flex-direction:column;height:100vh;overflow:hidden;min-width:0}
+
+/* TOPBAR */
+.topbar{display:flex;align-items:center;gap:12px;padding:15px 26px;background:var(--card);border-bottom:1px solid var(--border);flex-shrink:0}
+.subj-badge{display:inline-flex;align-items:center;gap:6px;padding:5px 13px;border-radius:8px;font-size:13px;font-weight:700;color:white}
+.topbar-title{font-family:'Bricolage Grotesque',sans-serif;font-size:19px;font-weight:800;color:var(--text)}
+.topbar-spacer{flex:1}
+.search-box{display:flex;align-items:center;gap:7px;background:var(--bg);border:1.5px solid var(--border);border-radius:9px;padding:8px 13px;width:210px;transition:border-color .2s}
+.search-box:focus-within{border-color:var(--blue)}
+.search-box input{border:none;background:transparent;outline:none;font-size:13px;font-family:inherit;color:var(--text);width:100%}
+.search-box input::placeholder{color:var(--light)}
+
+/* CONTENT */
+.content{flex:1;overflow-y:auto;padding:22px 26px 36px}
+
+/* STATS */
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:13px;margin-bottom:20px}
+.stat-card{background:var(--card);border-radius:var(--radius);border:1.5px solid var(--border);padding:16px 18px;transition:box-shadow .2s}
+.stat-card:hover{box-shadow:0 4px 18px rgba(0,0,0,0.07)}
+.stat-icon{width:36px;height:36px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:18px;margin-bottom:10px}
+.stat-val{font-family:'Bricolage Grotesque',sans-serif;font-size:26px;font-weight:800;color:var(--text);line-height:1;margin-bottom:3px}
+.stat-label{font-size:11.5px;color:var(--muted);font-weight:500}
+.stat-trend{font-size:11px;font-weight:700;margin-top:5px}
+.up{color:var(--green)}.dn{color:var(--red)}.nt{color:var(--muted)}
+
+/* DASH GRID */
+.dash-grid{display:grid;grid-template-columns:1fr 320px;gap:18px;align-items:start}
+
+/* TABLE CARD */
+.table-card{background:var(--card);border-radius:var(--radius);border:1.5px solid var(--border);overflow:hidden}
+.card-header{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid var(--border);gap:10px;flex-wrap:wrap}
+.card-title{font-family:'Bricolage Grotesque',sans-serif;font-size:15px;font-weight:800;color:var(--text)}
+.card-sub{font-size:11.5px;color:var(--muted);margin-top:2px}
+.chip{padding:3px 11px;border-radius:20px;font-size:11.5px;font-weight:700;background:var(--blue-soft);color:var(--blue)}
+.ftabs{display:flex;gap:0;background:var(--bg);border:1.5px solid var(--border);border-radius:8px;padding:3px}
+.ftab{padding:5px 13px;border-radius:6px;font-size:12px;font-weight:600;color:var(--muted);cursor:pointer;transition:all .15s}
+.ftab.active{background:white;color:var(--blue);box-shadow:0 1px 5px rgba(0,0,0,0.08)}
+
+/* STUDENT TABLE */
+.student-table{width:100%;border-collapse:collapse}
+.student-table th{padding:9px 16px;text-align:left;font-size:10.5px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;background:var(--bg);border-bottom:1px solid var(--border)}
+.student-table td{padding:12px 16px;border-bottom:1px solid var(--border);font-size:13px;vertical-align:middle}
+.student-table tr:last-child td{border-bottom:none}
+.student-table tbody tr{cursor:pointer;transition:background .12s}
+.student-table tbody tr:hover td{background:#FAFAFF}
+.student-table tbody tr.selected td{background:var(--blue-soft)}
+.s-name-cell{display:flex;align-items:center;gap:10px}
+.s-av{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:white;flex-shrink:0}
+.s-full{font-weight:600;font-size:13px}
+.s-id{font-size:10.5px;color:var(--muted)}
+.score-wrap{display:flex;align-items:center;gap:7px}
+.score-bar{flex:1;height:6px;background:var(--border);border-radius:3px;overflow:hidden;min-width:40px}
+.score-fill{height:100%;border-radius:3px}
+.score-val{font-size:12.5px;font-weight:700;min-width:28px}
+.sparkline{display:flex;align-items:flex-end;gap:2px;height:24px}
+.sp-bar{width:5px;border-radius:2px 2px 0 0;background:var(--blue-mid)}
+.sp-bar.hi{background:var(--blue)}
+
+/* DETAIL CARD */
+.detail-card{background:var(--card);border-radius:var(--radius);border:1.5px solid var(--border);overflow:hidden}
+.detail-top{background:linear-gradient(135deg,#2D0A5C,#7C3AED);padding:20px;position:relative;overflow:hidden}
+.detail-top::after{content:'';position:absolute;width:100px;height:100px;border-radius:50%;background:rgba(255,255,255,0.07);bottom:-25px;right:-20px}
+.d-av{width:50px;height:50px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:800;color:white;border:3px solid rgba(255,255,255,0.25);margin-bottom:10px}
+.d-name{font-family:'Bricolage Grotesque',sans-serif;font-size:17px;font-weight:800;color:white;margin-bottom:2px}
+.d-meta{font-size:11.5px;color:rgba(255,255,255,0.55)}
+.d-badges{display:flex;gap:5px;flex-wrap:wrap;margin-top:9px}
+.d-badge{padding:3px 9px;border-radius:20px;font-size:10.5px;font-weight:700;background:rgba(255,255,255,0.15);color:rgba(255,255,255,0.9)}
+.metric{display:flex;align-items:center;justify-content:space-between;padding:10px 16px;border-bottom:1px solid var(--border)}
+.metric:last-of-type{border-bottom:none}
+.m-label{font-size:12px;color:var(--muted);font-weight:500}
+.m-val{font-size:13px;font-weight:700;color:var(--text)}
+.topic-section{padding:12px 16px 14px;border-top:1px solid var(--border)}
+.topic-sec-label{font-size:10.5px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-bottom:10px}
+.subj-row{display:flex;align-items:center;gap:9px;margin-bottom:7px}
+.subj-row:last-child{margin-bottom:0}
+.subj-name{font-size:12px;color:var(--text);font-weight:600;min-width:90px}
+.subj-bar-bg{flex:1;height:7px;background:var(--border);border-radius:4px;overflow:hidden}
+.subj-bar-fill{height:100%;border-radius:4px}
+.subj-pct{font-size:11.5px;font-weight:700;min-width:30px;text-align:right;color:var(--text)}
+.detail-actions{display:flex;gap:8px;padding:12px 16px;border-top:1px solid var(--border)}
+.btn{flex:1;padding:9px;border-radius:8px;border:1.5px solid var(--border);background:white;font-size:12.5px;font-weight:600;color:var(--text);cursor:pointer;transition:all .17s;text-align:center;font-family:inherit}
+.btn:hover{border-color:var(--blue);color:var(--blue);background:var(--blue-soft)}
+.btn:disabled{opacity:.4;cursor:not-allowed;pointer-events:none}
+.btn.primary{background:var(--blue);color:white;border-color:var(--blue)}
+.btn.primary:hover{background:var(--blue-dark);border-color:var(--blue-dark)}
+
+/* MODAL */
+.modal-overlay{position:fixed;inset:0;background:rgba(10,4,28,0.6);backdrop-filter:blur(4px);z-index:200;display:flex;align-items:center;justify-content:center;padding:20px;opacity:0;pointer-events:none;transition:opacity .22s}
+.modal-overlay.open{opacity:1;pointer-events:all}
+.modal{background:white;border-radius:18px;width:100%;max-width:560px;max-height:88vh;overflow-y:auto;box-shadow:0 24px 80px rgba(0,0,0,0.2);transform:translateY(18px);transition:transform .28s cubic-bezier(.4,0,.2,1)}
+.modal-overlay.open .modal{transform:translateY(0)}
+.modal-head{background:linear-gradient(135deg,#2D0A5C,#7C3AED);padding:22px 22px 18px;position:relative}
+.modal-close{position:absolute;top:14px;right:14px;width:30px;height:30px;border-radius:8px;background:rgba(255,255,255,0.15);border:none;color:white;font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .18s}
+.modal-close:hover{background:rgba(255,255,255,0.25)}
+.modal-body{padding:20px 22px 24px}
+.modal-stats{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-bottom:18px}
+.ms{background:var(--bg);border-radius:10px;padding:13px;border:1px solid var(--border)}
+.ms-val{font-family:'Bricolage Grotesque',sans-serif;font-size:22px;font-weight:800;color:var(--text);margin-bottom:2px}
+.ms-label{font-size:11.5px;color:var(--muted)}
+.sec-label{font-size:10.5px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-bottom:10px}
+.quiz-table{width:100%;border-collapse:collapse}
+.quiz-table th{padding:7px 11px;text-align:left;font-size:10.5px;font-weight:700;color:var(--muted);text-transform:uppercase;border-bottom:1px solid var(--border)}
+.quiz-table td{padding:9px 11px;border-bottom:1px solid var(--border);font-size:12.5px}
+.quiz-table tr:last-child td{border-bottom:none}
+
+::-webkit-scrollbar{width:5px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:#DDD6FE;border-radius:10px}
+
+@media(max-width:1050px){.dash-grid{grid-template-columns:1fr}.stats-row{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:680px){
+  .sidebar{width:64px}
+  .sb-brand-name,.sb-brand-role,.subj-label,.subj-count,.sb-user-name,.sb-user-sub,.sb-section{display:none}
+  .subj-btn{justify-content:center;padding:10px 0;margin:2px 4px}
+  .sb-brand{justify-content:center;padding:16px 0}
+  .sb-user{justify-content:center}
+  .content{padding:16px 16px 32px}
+  .topbar{padding:12px 16px}
+}
+@media(max-width:480px){.stats-row{grid-template-columns:1fr 1fr}}
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="sb-brand">
+    <div class="sb-brand-icon">🎓</div>
+    <div>
+      <div class="sb-brand-name">EduBoard</div>
+      <div class="sb-brand-role">Teacher Panel</div>
+    </div>
+  </div>
+
+  <div class="sb-section">Navigate</div>
+  <a href="/teacher-dashboard" style="display:flex;align-items:center;gap:10px;padding:11px 12px;margin:2px 8px;border-radius:10px;cursor:pointer;transition:all .18s;color:#6B6B8A;font-size:13px;font-weight:500;text-decoration:none" onmouseover="this.style.background='#F5F3FF';this.style.color='#7C3AED'" onmouseout="this.style.background='none';this.style.color='#6B6B8A'">
+    <div style="width:32px;height:32px;border-radius:9px;background:#EDE9F8;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0">🏠</div>
+    <span style="font-weight:600">Dashboard</span>
+  </a>
+
+  <div class="sb-section">My Subjects</div>
+
+  {% set subj_icons = {'Mathematics':'🔢','Science':'🔬','History':'🏛️','Geography':'🌍','Computer Science':'💻','General Knowledge':'🧠','English':'📖','Sports':'⚽'} %}
+  {% set subj_colors = {'Mathematics':'#7C3AED','Science':'#059669','History':'#D97706','Geography':'#DC2626','Computer Science':'#0EA5E9','General Knowledge':'#EC4899','English':'#8B5CF6','Sports':'#10B981'} %}
+  {% set subj_bgs = {'Mathematics':'#EDE9F8','Science':'#D1FAE5','History':'#FEF3C7','Geography':'#FEE2E2','Computer Science':'#E0F2FE','General Knowledge':'#FCE7F3','English':'#EDE9F8','Sports':'#D1FAE5'} %}
+  {% if subjects %}
+    {% for subj in subjects %}
+    <div class="subj-btn {% if loop.first %}active{% endif %}"
+         onclick="switchSubject(this,'{{ subj.name }}','{{ subj_icons.get(subj.name, '📚') }}','{{ subj_colors.get(subj.name, '#7C3AED') }}')">
+      <div class="subj-icon" style="background:{{ subj_bgs.get(subj.name, '#EDE9F8') }}">{{ subj_icons.get(subj.name, '📚') }}</div>
+      <span class="subj-label">{{ subj.name }}</span>
+      <span class="subj-count">{{ subj.student_count }}</span>
+    </div>
+    {% endfor %}
+  {% else %}
+    <div style="padding:16px 20px;font-size:12px;color:var(--muted)">No quiz data yet</div>
+  {% endif %}
+
+  <div class="sb-bottom">
+    <div class="sb-user">
+      <div class="sb-avatar">{{ user.initials }}</div>
+      <div style="flex:1;min-width:0">
+        <div class="sb-user-name">{{ user.full_name }}</div>
+        <div class="sb-user-sub">{{ user.subject or 'Teacher' }}</div>
+      </div>
+      <a href="/logout" style="font-size:16px;color:#6B6B8A;text-decoration:none;padding:4px" title="Logout">⏻</a>
+    </div>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<div class="main">
+  <div class="topbar">
+    <div id="subj-badge" class="subj-badge" style="background:#7C3AED">🐍 Python</div>
+    <div class="topbar-title">Student Data</div>
+    <div class="topbar-spacer"></div>
+    <div class="search-box">
+      <span style="font-size:13px;color:var(--light)">🔍</span>
+      <input type="text" id="search-input" placeholder="Search student…" oninput="doSearch(this.value)">
+    </div>
+  </div>
+
+  <div class="content">
+
+    <!-- STATS -->
+    <div class="stats-row">
+      <div class="stat-card">
+        <div class="stat-icon" style="background:#EDE9F8">👥</div>
+        <div class="stat-val" id="st-total">—</div>
+        <div class="stat-label">Total Students</div>
+        <div class="stat-trend nt">↔ Enrolled this term</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon" style="background:#D1FAE5">📊</div>
+        <div class="stat-val" id="st-avg">—</div>
+        <div class="stat-label">Class Average</div>
+        <div class="stat-trend up" id="st-avg-t">↑ +4% vs last quiz</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon" style="background:#FEF3C7">🎯</div>
+        <div class="stat-val" id="st-att">—</div>
+        <div class="stat-label">Avg Attendance</div>
+        <div class="stat-trend dn" id="st-att-t">↓ -2% this week</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon" style="background:#FEE2E2">⚠️</div>
+        <div class="stat-val" id="st-risk">—</div>
+        <div class="stat-label">At Risk</div>
+        <div class="stat-trend nt">Students below 65%</div>
+      </div>
+    </div>
+
+    <!-- GRID -->
+    <div class="dash-grid">
+
+      <!-- TABLE -->
+      <div class="table-card">
+        <div class="card-header">
+          <div>
+            <div class="card-title">Student Performance</div>
+            <div class="card-sub">Click any row to view student details</div>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px">
+            <span class="chip" id="showing-chip">—</span>
+            <div class="ftabs">
+              <div class="ftab active" onclick="setFilter(this,'all')">All</div>
+              <div class="ftab" onclick="setFilter(this,'top')">Top</div>
+              <div class="ftab" onclick="setFilter(this,'risk')">At Risk</div>
+            </div>
+          </div>
+        </div>
+        <div style="overflow-x:auto">
+          <table class="student-table">
+            <thead>
+              <tr>
+                <th>Student</th>
+                <th>Rank</th>
+                <th>Avg Score</th>
+                <th>Attendance</th>
+                <th>Last Quiz</th>
+                <th>Trend</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody id="tbody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- DETAIL PANEL -->
+      <div class="detail-card">
+        <div class="detail-top">
+          <div class="d-av" id="d-av" style="background:#6B6B8A">?</div>
+          <div class="d-name" id="d-name">Select a student</div>
+          <div class="d-meta" id="d-meta">Click any row to view details</div>
+          <div class="d-badges" id="d-badges"></div>
+        </div>
+        <div>
+          <div class="metric"><span class="m-label">Overall Score</span><span class="m-val" id="d-score">—</span></div>
+          <div class="metric"><span class="m-label">Attendance</span><span class="m-val" id="d-att">—</span></div>
+          <div class="metric"><span class="m-label">Quizzes Taken</span><span class="m-val" id="d-quizzes">—</span></div>
+          <div class="metric"><span class="m-label">Best Topic</span><span class="m-val" id="d-best">—</span></div>
+          <div class="metric"><span class="m-label">Needs Help In</span><span class="m-val" id="d-weak">—</span></div>
+          <div class="metric"><span class="m-label">Class Rank</span><span class="m-val" id="d-rank">—</span></div>
+        </div>
+        <div class="topic-section">
+          <div class="topic-sec-label">Topic Breakdown</div>
+          <div id="topic-bars"></div>
+        </div>
+        <div class="detail-actions">
+          <button class="btn" id="btn-report" onclick="openModal()" disabled>📄 Full Report</button>
+          <button class="btn primary" id="btn-msg" disabled>✉ Message</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- MODAL -->
+<div class="modal-overlay" id="modal-overlay" onclick="maybeClose(event)">
+  <div class="modal">
+    <div class="modal-head">
+      <button class="modal-close" onclick="closeModal()">✕</button>
+      <div id="m-av" style="width:48px;height:48px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:800;color:white;border:3px solid rgba(255,255,255,0.25);margin-bottom:9px;background:#6B6B8A"></div>
+      <div style="font-family:'Bricolage Grotesque',sans-serif;font-size:19px;font-weight:800;color:white;margin-bottom:2px" id="m-name"></div>
+      <div style="font-size:11.5px;color:rgba(255,255,255,0.55)" id="m-meta"></div>
+    </div>
+    <div class="modal-body">
+      <div class="modal-stats" id="m-stats"></div>
+      <div class="sec-label">Quiz History</div>
+      <table class="quiz-table">
+        <thead><tr><th>Topic</th><th>Date</th><th>Score</th><th>Rank</th><th>Result</th></tr></thead>
+        <tbody id="m-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<script>
+const AVATARS = ['#7C3AED','#0EA5E9','#059669','#D97706','#DC2626','#EC4899','#8B5CF6','#14B8A6','#6366F1','#10B981'];
+const TOPIC_COLORS = ['#7C3AED','#0EA5E9','#059669','#D97706','#EC4899'];
+const STATUS_MAP = {excellent:'🟢 Excellent', good:'🔵 Good', average:'🟡 Average', 'at-risk':'🔴 At Risk'};
+
+// ── Live data injected from Flask/DB ──
+const SUBJECTS = {{ subjects_json | safe }};
+
+let currentSubject = Object.keys(SUBJECTS)[0] || '';
+let currentFilter  = 'all';
+let selectedStu    = null;
+let visibleList    = [];
+
+// ── Switch subject when sidebar button clicked ──
+function switchSubject(el, name, icon, color) {
+  document.querySelectorAll('.subj-btn').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+  currentSubject = name;
+  selectedStu    = null;
+  currentFilter  = 'all';
+  document.querySelectorAll('.ftab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.ftab')[0].classList.add('active');
+  document.getElementById('search-input').value = '';
+  document.getElementById('subj-badge').style.background = color;
+  document.getElementById('subj-badge').textContent = `${icon} ${name}`;
+  resetDetail();
+  applyFilter();
+}
+
+function setFilter(el, f) {
+  document.querySelectorAll('.ftab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  currentFilter = f;
+  document.getElementById('search-input').value = '';
+  applyFilter();
+}
+
+function doSearch(q) {
+  const base = getFiltered();
+  renderTable(q ? base.filter(s => s.name.toLowerCase().includes(q.toLowerCase()) || s.id.toLowerCase().includes(q.toLowerCase())) : base);
+}
+
+function getFiltered() {
+  if (!SUBJECTS[currentSubject]) return [];
+  const all = SUBJECTS[currentSubject].students;
+  if (currentFilter === 'top')  return all.filter(s => s.score >= 80);
+  if (currentFilter === 'risk') return all.filter(s => s.status === 'at-risk');
+  return all;
+}
+
+function applyFilter() {
+  renderTable(getFiltered());
+  updateStats();
+}
+
+function updateStats() {
+  if (!SUBJECTS[currentSubject]) return;
+  const all  = SUBJECTS[currentSubject].students;
+  if (!all.length) {
+    document.getElementById('st-total').textContent = '0';
+    document.getElementById('st-avg').textContent   = '—';
+    document.getElementById('st-att').textContent   = '—';
+    document.getElementById('st-risk').textContent  = '0';
+    return;
+  }
+  const avg  = Math.round(all.reduce((a, s) => a + s.score, 0) / all.length);
+  const risk = all.filter(s => s.status === 'at-risk').length;
+  document.getElementById('st-total').textContent = SUBJECTS[currentSubject].students.length;
+  document.getElementById('st-avg').textContent   = avg + '%';
+  document.getElementById('st-att').textContent   = all.length + ' students';
+  document.getElementById('st-risk').textContent  = risk;
+}
+
+function renderTable(list) {
+  visibleList = list;
+  document.getElementById('showing-chip').textContent = `Showing ${list.length}`;
+  const tbody = document.getElementById('tbody');
+  tbody.innerHTML = '';
+
+  if (!list.length) {
+    tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:40px;color:var(--muted)">
+      <div style="font-size:28px;margin-bottom:8px">📊</div>
+      No students found for this subject yet.
+    </td></tr>`;
+    return;
+  }
+
+  list.forEach((s, i) => {
+    const color = s._color || AVATARS[i % AVATARS.length];
+    s._color = color;
+    const ini = s.name.split(' ').map(n => n[0]).join('');
+    const sc  = s.score >= 80 ? '#059669' : s.score >= 65 ? '#D97706' : '#DC2626';
+    const ac  = '#6B6B8A'; // attendance placeholder
+    const tr  = document.createElement('tr');
+    if (selectedStu && selectedStu.id === s.id) tr.classList.add('selected');
+    tr.onclick = () => selectStudent(s);
+
+    // Build sparkline from trend array
+    const sparkBars = (s.trend || [s.score]).map((v, j, arr) =>
+      `<div class="sp-bar${j === arr.length - 1 ? ' hi' : ''}" style="height:${Math.round(v / 100 * 24)}px"></div>`
+    ).join('');
+
+    tr.innerHTML = `
+      <td><div class="s-name-cell">
+        <div class="s-av" style="background:${color}">${ini}</div>
+        <div><div class="s-full">${s.name}</div><div class="s-id">${s.id}</div></div>
+      </div></td>
+      <td><span style="font-weight:700;color:var(--blue)">#${s.rank}</span></td>
+      <td><div class="score-wrap">
+        <div class="score-bar"><div class="score-fill" style="width:${s.score}%;background:${sc}"></div></div>
+        <span class="score-val" style="color:${sc}">${s.score}%</span>
+      </div></td>
+      <td><span style="font-weight:700;color:var(--muted)">${s.quizzes} taken</span></td>
+      <td><span style="font-weight:700">${s.lastQuiz}%</span></td>
+      <td><div class="sparkline">${sparkBars}</div></td>
+      <td><span style="font-size:12px;font-weight:700">${STATUS_MAP[s.status] || s.status}</span></td>`;
+    tbody.appendChild(tr);
+  });
+}
+
+function selectStudent(s) {
+  selectedStu = s;
+  renderTable(visibleList);
+  const ini = s.name.split(' ').map(n => n[0]).join('');
+  const sc  = s.score >= 80 ? '#059669' : s.score >= 65 ? '#D97706' : '#DC2626';
+
+  document.getElementById('d-av').style.background = s._color || '#7C3AED';
+  document.getElementById('d-av').textContent       = ini;
+  document.getElementById('d-name').textContent     = s.name;
+  document.getElementById('d-meta').textContent     = `${s.id} · ${currentSubject}`;
+  document.getElementById('d-badges').innerHTML     = (s.badges || []).map(b => `<span class="d-badge">${b}</span>`).join('');
+  document.getElementById('d-score').innerHTML      = `<span style="color:${sc}">${s.score}%</span>`;
+  document.getElementById('d-att').textContent      = `${s.quizzes} quizzes`;
+  document.getElementById('d-quizzes').textContent  = `${s.quizzes} taken`;
+  document.getElementById('d-best').textContent     = s.best || currentSubject;
+  document.getElementById('d-weak').textContent     = s.weak || '—';
+  document.getElementById('d-rank').textContent     = `#${s.rank} of ${SUBJECTS[currentSubject].students.length}`;
+
+  // Topic performance bars — built from real per-difficulty breakdown
+  const topics = s.difficulty_breakdown || [];
+  if (topics.length) {
+    document.getElementById('topic-bars').innerHTML = topics.map((t, i) => `
+      <div class="subj-row">
+        <span class="subj-name">${t.difficulty}</span>
+        <div class="subj-bar-bg"><div class="subj-bar-fill" style="width:${t.avg}%;background:${TOPIC_COLORS[i % TOPIC_COLORS.length]}"></div></div>
+        <span class="subj-pct">${t.avg}%</span>
+      </div>`).join('');
+  } else {
+    const pct = s.score;
+    document.getElementById('topic-bars').innerHTML = `
+      <div class="subj-row">
+        <span class="subj-name">${currentSubject}</span>
+        <div class="subj-bar-bg"><div class="subj-bar-fill" style="width:${pct}%;background:#7C3AED"></div></div>
+        <span class="subj-pct">${pct}%</span>
+      </div>`;
+  }
+
+  document.getElementById('btn-report').disabled = false;
+  document.getElementById('btn-msg').disabled    = false;
+}
+
+function resetDetail() {
+  selectedStu = null;
+  document.getElementById('d-av').style.background = '#6B6B8A';
+  document.getElementById('d-av').textContent      = '?';
+  document.getElementById('d-name').textContent    = 'Select a student';
+  document.getElementById('d-meta').textContent    = 'Click any row to view details';
+  document.getElementById('d-badges').innerHTML    = '';
+  ['d-score','d-att','d-quizzes','d-best','d-weak','d-rank'].forEach(id => document.getElementById(id).innerHTML = '—');
+  document.getElementById('topic-bars').innerHTML  = '';
+  document.getElementById('btn-report').disabled   = true;
+  document.getElementById('btn-msg').disabled      = true;
+}
+
+function openModal() {
+  if (!selectedStu) return;
+  const s  = selectedStu;
+  const sc = s.score >= 80 ? '#059669' : s.score >= 65 ? '#D97706' : '#DC2626';
+  const ini = s.name.split(' ').map(n => n[0]).join('');
+
+  document.getElementById('m-av').style.background = s._color || '#7C3AED';
+  document.getElementById('m-av').textContent      = ini;
+  document.getElementById('m-name').textContent    = s.name;
+  document.getElementById('m-meta').textContent    = `${s.id} · ${currentSubject} Subject`;
+
+  document.getElementById('m-stats').innerHTML = [
+    { v: `<span style="color:${sc}">${s.score}%</span>`, l: 'Avg Score' },
+    { v: `#${s.rank}`,                                   l: 'Class Rank' },
+    { v: `${s.quizzes}`,                                 l: 'Quizzes Taken' },
+    { v: `${s.lastQuiz}%`,                               l: 'Last Quiz' },
+  ].map(m => `<div class="ms"><div class="ms-val">${m.v}</div><div class="ms-label">${m.l}</div></div>`).join('');
+
+  // Real quiz history from DB
+  const history = s.quiz_history || [];
+  if (history.length) {
+    document.getElementById('m-tbody').innerHTML = history.map(q => {
+      const res = q.score >= 65
+        ? '<span style="color:#059669;font-weight:700">Pass</span>'
+        : '<span style="color:#DC2626;font-weight:700">Fail</span>';
+      return `<tr>
+        <td>${q.subject}</td>
+        <td style="color:var(--muted)">${q.taken_at}</td>
+        <td style="font-weight:700">${q.score}%</td>
+        <td>${q.difficulty}</td>
+        <td>${res}</td>
+      </tr>`;
+    }).join('');
+  } else {
+    document.getElementById('m-tbody').innerHTML =
+      `<tr><td colspan="5" style="text-align:center;padding:20px;color:var(--muted)">No quiz history available</td></tr>`;
+  }
+
+  document.getElementById('modal-overlay').classList.add('open');
+}
+
+function maybeClose(e) { if (e.target === document.getElementById('modal-overlay')) closeModal(); }
+function closeModal()   { document.getElementById('modal-overlay').classList.remove('open'); }
+
+// ── Init with first live subject ──
+if (currentSubject) {
+  applyFilter();
+} else {
+  document.getElementById('tbody').innerHTML =
+    `<tr><td colspan="7" style="text-align:center;padding:48px;color:var(--muted)">
+      <div style="font-size:36px;margin-bottom:10px">🎯</div>
+      No quiz data yet. Students will appear here once they take quizzes.
+    </td></tr>`;
+}
+</script>
+</body>
+</html>
