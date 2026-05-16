@@ -8,11 +8,21 @@ import random
 import os
 
 app = Flask(__name__)
-app.secret_key = 'eduboard-secret-key-2025-change-in-prod'
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///eduboard.db'
+app.secret_key = os.environ.get('SECRET_KEY', 'eduboard-secret-key-2025-change-in-prod')
+
+# Database Configuration (supports PostgreSQL on Render)
+db_url = os.environ.get('DATABASE_URL', 'sqlite:///eduboard.db')
+if db_url.startswith("postgres://"):
+    db_url = db_url.replace("postgres://", "postgresql://", 1)
+
+app.config['SQLALCHEMY_DATABASE_URI'] = db_url
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db = SQLAlchemy(app)
+
+# Ensure tables are created in the new PostgreSQL DB
+with app.app_context():
+    db.create_all()
 
 # ═══════════════════════════════════════════════════════
 #  MODELS
