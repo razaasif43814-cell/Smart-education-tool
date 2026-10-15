@@ -1,4 +1,3 @@
-# Smart-education-tool
 # 🎓 EduBoard – Smart Student & Teacher Dashboard
 
 **EduBoard** is a full-stack web application designed to enhance the learning experience for both **students and teachers**. It provides tools for quiz management, performance tracking, analytics, and student data insights — all in one modern dashboard.
@@ -64,7 +63,7 @@ The system supports **role-based access** for students and teachers.
 
 ## 📁 Project Structure
 
-```id="y7dk28"
+```
 app.py                      # Main Flask backend
 templates/
   ├── login.html
@@ -109,19 +108,19 @@ templates/
 
 ### 1. Install Dependencies
 
-```bash id="x1f93l"
+```bash
 pip install flask flask_sqlalchemy werkzeug requests
 ```
 
 ### 2. Run the App
 
-```bash id="k9z2lp"
+```bash
 python app.py
 ```
 
 ### 3. Open in Browser
 
-```id="wq2sdf"
+```
 http://127.0.0.1:5000
 ```
 
